@@ -40,5 +40,5 @@ def transport(
     # note that each sheet in the spreadsheet can be accessed by:
     # --> name of the sheet: str
     # --> dataframe of the sheet: pandas dataframe
-    spreadsheet_dataframe_dict = data.access_dataframe(fully_qualified_spreadsheet_file)
+    spreadsheet_dataframe_dict = data.access_dataframes(fully_qualified_spreadsheet_file)
     console.print(spreadsheet_dataframe_dict.keys())
