@@ -31,7 +31,9 @@ def transport(
 ) -> None:
     """Transport a specified spreadsheet."""
     # determine if the provided directory and file are valid
-    if not filesystem.confirm_valid_file_in_directory(spreadsheet_file, spreadsheet_directory):
+    if not filesystem.confirm_valid_file_in_directory(
+        spreadsheet_file, spreadsheet_directory
+    ):
         console.print(":person_shrugging: Unable to access file and/or directory!")
     # access all of the sheets inside of the valid spreadsheet file
     fully_qualified_spreadsheet_file = spreadsheet_directory / spreadsheet_file
@@ -40,5 +42,7 @@ def transport(
     # note that each sheet in the spreadsheet can be accessed by:
     # --> name of the sheet: str
     # --> dataframe of the sheet: pandas dataframe
-    spreadsheet_dataframe_dict = data.access_dataframes(fully_qualified_spreadsheet_file)
+    spreadsheet_dataframe_dict = data.access_dataframes(
+        fully_qualified_spreadsheet_file
+    )
     console.print(spreadsheet_dataframe_dict.keys())
