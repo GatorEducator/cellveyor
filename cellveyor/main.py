@@ -20,13 +20,19 @@ def transport(
         ...,
         "--spreadsheet-directory",
         "-d",
-        help="A directory with spreadsheet file(s).",
+        help="Directory with spreadsheet file(s).",
     ),
     spreadsheet_file: Path = typer.Option(
         ...,
         "--spreadsheet-file",
         "-f",
-        help="A spreadsheet file in the specified directory.",
+        help="Spreadsheet file in the specified directory.",
+    ),
+    sheet_name: str = typer.Option(
+        ...,
+        "--sheet-name",
+        "-s",
+        help="Name of specific sheet in spreadsheet file",
     ),
 ) -> None:
     """Transport a specified spreadsheet."""
@@ -42,7 +48,10 @@ def transport(
     # note that each sheet in the spreadsheet can be accessed by:
     # --> name of the sheet: str
     # --> dataframe of the sheet: pandas dataframe
-    spreadsheet_dataframe_dict = data.access_dataframes(
+    sheet_dataframe_dict = data.access_dataframes(
         fully_qualified_spreadsheet_file
     )
-    console.print(spreadsheet_dataframe_dict.keys())
+    console.print(sheet_dataframe_dict.keys())
+    # access the requested sheet within the spreadsheet
+    sheet_dataframe = sheet_dataframe_dict[sheet_name]
+    console.print(sheet_dataframe)
