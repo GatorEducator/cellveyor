@@ -41,6 +41,12 @@ def transport(
         "-k",
         help="Name of key attribute in specific sheet of spreadsheet file",
     ),
+    column_regexp: str = typer.Option(
+        ...,
+        "--column-regexp",
+        "-c",
+        help="Regular expression for matching columns in specific sheet",
+    ),
 ) -> None:
     """Transport a specified spreadsheet."""
     # determine if the provided directory and file are valid
@@ -63,12 +69,12 @@ def transport(
     # --> the key attribute
     # --> the column(s) that match the regular expression
     selected_columns, result_df = data.key_attribute_column_filter(
-        sheet_dataframe, key_attribute, "Executable Examination 1"
+        sheet_dataframe, key_attribute, column_regexp
     )
     console.print(result_df)
     # create a unique message for each row in the dataframe
-    for index, row in result_df.iterrows():
-        student_github = row["Student GitHub"]
+    for _, row in result_df.iterrows():
+        student_github = row[key_attribute]
         for column_name in selected_columns.columns:
             exam_value = row[column_name]
-            print(f"Student GitHub: {student_github}, {column_name}: {exam_value}")
+            print(f"{key_attribute}: {student_github}, {column_name}: {exam_value}")
