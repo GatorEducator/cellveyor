@@ -5,7 +5,8 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
-from cellveyor import data, filesystem
+from cellveyor import data
+from cellveyor import filesystem
 
 # create a Typer object to support the command-line interface
 cli = typer.Typer(no_args_is_help=True)
@@ -34,6 +35,12 @@ def transport(
         "-s",
         help="Name of specific sheet in spreadsheet file",
     ),
+    key_attribute: str = typer.Option(
+        ...,
+        "--key-attribute",
+        "-k",
+        help="Name of key attribute in specific sheet of spreadsheet file",
+    ),
 ) -> None:
     """Transport a specified spreadsheet."""
     # determine if the provided directory and file are valid
@@ -48,10 +55,20 @@ def transport(
     # note that each sheet in the spreadsheet can be accessed by:
     # --> name of the sheet: str
     # --> dataframe of the sheet: pandas dataframe
-    sheet_dataframe_dict = data.access_dataframes(
-        fully_qualified_spreadsheet_file
-    )
+    sheet_dataframe_dict = data.access_dataframes(fully_qualified_spreadsheet_file)
     console.print(sheet_dataframe_dict.keys())
     # access the requested sheet within the spreadsheet
     sheet_dataframe = sheet_dataframe_dict[sheet_name]
-    console.print(sheet_dataframe)
+    # access the data for:
+    # --> the key attribute
+    # --> the column(s) that match the regular expression
+    selected_columns, result_df = data.key_attribute_column_filter(
+        sheet_dataframe, key_attribute, "Executable Examination 1"
+    )
+    console.print(result_df)
+    # create a unique message for each row in the dataframe
+    for index, row in result_df.iterrows():
+        student_github = row["Student GitHub"]
+        for column_name in selected_columns.columns:
+            exam_value = row[column_name]
+            print(f"Student GitHub: {student_github}, {column_name}: {exam_value}")
