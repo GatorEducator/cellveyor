@@ -20,4 +20,4 @@ def key_attribute_column_filter(
     result_df = sheet_dataframe[
         [key_attribute_name] + list(selected_columns.columns)  # noqa: RUF005
     ].dropna()
-    return (selected_columns, result_df)
+    return (selected_columns, result_df)  # type: ignore
