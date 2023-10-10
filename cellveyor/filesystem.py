@@ -30,9 +30,14 @@ def confirm_valid_file_in_directory(
     directory: Path,
 ) -> bool:
     """Confirm that the file exists in a directory and then return it along with signal."""
+    # confirm that the directory that should contain the file is valid
     valid_directory = confirm_valid_directory(directory)
+    # when the directory is valid, confirm that the file is valid
     if valid_directory:
         valid_file = confirm_valid_file(directory / file)
+        # if the directory is valid and the file that is inside
+        # of the directory is also valid, then it is a valid combination
         if valid_file:
             return True
+    # the combination of the provided file and directory are not valid
     return False
