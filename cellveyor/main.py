@@ -1,17 +1,14 @@
 """🚚 Cellveyor is a conveyor for the cells in spreadsheets."""
 
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import typer
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
-from cellveyor import data
-from cellveyor import filesystem
-from cellveyor import report
-from cellveyor import transfer
+from cellveyor import data, filesystem, report, transfer
 
 # create a Typer object to support the command-line interface
 cli = typer.Typer(no_args_is_help=True)
@@ -58,22 +55,26 @@ def transport(  # noqa: PLR0913
         "-a",
         help="Name of key attribute in specific sheet of spreadsheet file",
     ),
-    key_value: str = typer.Option(
-        None,
-        "--key-value",
-        "-v",
-        help="Value of key attribute in specific sheet of spreadsheet file",
-    ),
     column_regexp: str = typer.Option(
         ...,
         "--column-regexp",
         "-c",
         help="Regular expression for matching columns in specific sheet",
     ),
+    key_value: str = typer.Option(
+        None,
+        "--key-value",
+        "-v",
+        help="Value of key attribute in specific sheet of spreadsheet file",
+    ),
+    feedback_file: List[Path] = typer.Option(
+        None,
+        "--feedback-file",
+        "-f",
+        help="Feedback file(s) in JSON format",
+    ),
     transfer_report: bool = typer.Option(
         False,
-        "--transfer",
-        "-t",
         help="GitHub authorization token",
     ),
     github_token: str = typer.Option(
