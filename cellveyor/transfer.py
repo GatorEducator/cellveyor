@@ -7,7 +7,13 @@ from github import Auth, Github
 # the fixed identifier for the pull request that will
 # contain the feedback for the specified repository
 PULL_REQUEST_ID = 1
+
+# the forward slash used in the fully qualified
+# names of GitHub repositories
 FORWARD_SLASH = "/"
+
+# the dash that separates a GitHub repository prefix
+# from the GitHub username that owns the repository
 DASH = "-"
 
 
