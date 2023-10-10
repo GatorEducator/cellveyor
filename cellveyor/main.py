@@ -23,6 +23,8 @@ def display_reports(reports_dict: Dict[str, str]) -> None:
     for current_report_key in reports_dict.keys():
         # extract the report for the current key
         current_report = reports_dict[current_report_key]
+        # display the report inside of a rich panel, using
+        # a markdown-based formatter for the report's contents
         console.print(Panel(Markdown(current_report), title="Report", expand=False))
         console.print()
 
