@@ -12,9 +12,10 @@ def create_per_key_report(
     markdown_reports: Dict[str, str] = {}
     # create a unique message for each row in the dataframe
     for _, row in result_dataframe.iterrows():
-        student_github = str(row[key_attribute])
+        key_attribute_value = str(row[key_attribute])
+        current_report = f"**Hello @{key_attribute_value}! Here are your summary scores:**\n\n"
         for column_name in selected_columns.columns:
             exam_value = row[column_name]
-            current_report = f"{key_attribute}: {student_github}, {column_name}: {exam_value}"
-            markdown_reports[student_github] = current_report
+            current_report = current_report + f"- **{column_name}**: {exam_value}\n"
+            markdown_reports[key_attribute_value] = current_report
     return markdown_reports
