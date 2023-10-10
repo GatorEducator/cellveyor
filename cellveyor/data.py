@@ -19,7 +19,7 @@ def key_attribute_column_filter(
     sheet_dataframe: pandas.DataFrame,
     key_attribute_name: str,
     column_regexp: str,
-    key_attribute_value: str = None,
+    key_attribute_value: str = "",
 ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Extract a region of a dataframe defined by a key attribute and columns that match a regular expression."""
     # use the provided regular expression to extract from the data frame
