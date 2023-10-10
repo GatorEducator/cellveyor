@@ -28,7 +28,7 @@ def display_reports(reports_dict: Dict[str, str]) -> None:
 
 
 @cli.command()
-def transport(
+def transport(  # noqa: PLR0913
     spreadsheet_directory: Path = typer.Option(
         ...,
         "--spreadsheet-directory",
