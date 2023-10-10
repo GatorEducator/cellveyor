@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
-from cellveyor import data, filesystem, report
+from cellveyor import data, filesystem, report, transfer
 
 # create a Typer object to support the command-line interface
 cli = typer.Typer(no_args_is_help=True)
@@ -67,16 +67,28 @@ def transport(  # noqa: PLR0913
         "-c",
         help="Regular expression for matching columns in specific sheet",
     ),
+    transfer_report: bool = typer.Option(
+        False,
+        "--transfer",
+        "-t",
+        help="GitHub authorization token",
+    ),
+    github_token: str = typer.Option(
+        None,
+        "--github-token",
+        "-g",
+        help="GitHub authorization token",
+    ),
     github_organization: str = typer.Option(
         None,
         "--github-organization",
-        "-g",
+        "-o",
         help="GitHub organization that stores all matching repositories ",
     ),
     github_repository_prefix: str = typer.Option(
         None,
         "--github-repository-prefix",
-        "-g",
+        "-p",
         help="Prefix for all GitHub repositories used as a destination",
     ),
 ) -> None:
@@ -109,3 +121,8 @@ def transport(  # noqa: PLR0913
     )
     # display the generated reports
     display_reports(per_key_report)
+    # if the --transfer flag was enabled then this means
+    # that the generated reports should be uploaded to GitHub
+    # as a comment inside of the standard pull request
+    if transfer_report:
+        transfer.transfer_report_to_github(github_token, per_key_report["gkapfham"])
