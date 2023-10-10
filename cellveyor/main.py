@@ -50,14 +50,32 @@ def transport(
     key_attribute: str = typer.Option(
         ...,
         "--key-attribute",
-        "-k",
+        "-a",
         help="Name of key attribute in specific sheet of spreadsheet file",
+    ),
+    key_value: str = typer.Option(
+        None,
+        "--key-value",
+        "-v",
+        help="Value of key attribute in specific sheet of spreadsheet file",
     ),
     column_regexp: str = typer.Option(
         ...,
         "--column-regexp",
         "-c",
         help="Regular expression for matching columns in specific sheet",
+    ),
+    github_organization: str = typer.Option(
+        None,
+        "--github-organization",
+        "-g",
+        help="GitHub organization that stores all matching repositories ",
+    ),
+    github_repository_prefix: str = typer.Option(
+        None,
+        "--github-repository-prefix",
+        "-g",
+        help="Prefix for all GitHub repositories used as a destination",
     ),
 ) -> None:
     """Transport a specified spreadsheet."""
@@ -81,9 +99,8 @@ def transport(
     # --> the key attribute
     # --> the column(s) that match the regular expression
     selected_columns, result_df = data.key_attribute_column_filter(
-        sheet_dataframe, key_attribute, column_regexp
+        sheet_dataframe, key_attribute, column_regexp, key_value
     )
-    console.print(result_df)
     # create a unique message for each row in the dataframe
     per_key_report = report.create_per_key_report(
         key_attribute, result_df, selected_columns
