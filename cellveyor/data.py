@@ -8,6 +8,9 @@ import pandas
 
 def access_dataframes(spreadsheet_file: Path) -> Dict[str, pandas.DataFrame]:
     """Access all dataframes from the provided spreadsheet file."""
+    # read all of the dataframes from the provided spreadsheet file;
+    # this will return a dictionary where the key is a string that
+    # gives the name of a specific sheet and then the value is the dataframe
     name_to_dataframe_dict = pandas.read_excel(spreadsheet_file, sheet_name=None)
     return name_to_dataframe_dict
 
