@@ -1,9 +1,12 @@
 """🚚 Cellveyor is a conveyor for the cells in spreadsheets."""
 
 from pathlib import Path
+from typing import Dict
 
 import typer
 from rich.console import Console
+from rich.markdown import Markdown
+from rich.panel import Panel
 
 from cellveyor import data, filesystem, report
 
@@ -12,6 +15,16 @@ cli = typer.Typer(no_args_is_help=True)
 
 # create a default console
 console = Console()
+
+
+def display_reports(reports_dict: Dict[str, str]) -> None:
+    """Display all of the reports in the reports dictionary."""
+    # iterate through all of the keys
+    for current_report_key in reports_dict.keys():
+        # extract the report for the current key
+        current_report = reports_dict[current_report_key]
+        console.print(Panel(Markdown(current_report), title="Report", expand=False))
+        console.print()
 
 
 @cli.command()
@@ -75,4 +88,5 @@ def transport(
     per_key_report = report.create_per_key_report(
         key_attribute, result_df, selected_columns
     )
-    console.print(per_key_report)
+    # display the generated reports
+    display_reports(per_key_report)
