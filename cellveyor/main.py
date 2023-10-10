@@ -5,8 +5,7 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
-from cellveyor import data
-from cellveyor import filesystem
+from cellveyor import data, filesystem
 
 # create a Typer object to support the command-line interface
 cli = typer.Typer(no_args_is_help=True)
@@ -77,4 +76,6 @@ def transport(
         student_github = row[key_attribute]
         for column_name in selected_columns.columns:
             exam_value = row[column_name]
-            console.print(f"{key_attribute}: {student_github}, {column_name}: {exam_value}")
+            console.print(
+                f"{key_attribute}: {student_github}, {column_name}: {exam_value}"
+            )
