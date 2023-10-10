@@ -8,7 +8,10 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
-from cellveyor import data, filesystem, report, transfer
+from cellveyor import data
+from cellveyor import filesystem
+from cellveyor import report
+from cellveyor import transfer
 
 # create a Typer object to support the command-line interface
 cli = typer.Typer(no_args_is_help=True)
@@ -125,4 +128,6 @@ def transport(  # noqa: PLR0913
     # that the generated reports should be uploaded to GitHub
     # as a comment inside of the standard pull request
     if transfer_report:
-        transfer.transfer_report_to_github(github_token, per_key_report["gkapfham"])
+        transfer.transfer_reports_to_github(
+            github_token, github_organization, github_repository_prefix, per_key_report
+        )
