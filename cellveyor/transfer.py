@@ -2,8 +2,7 @@
 
 from typing import Dict
 
-from github import Auth
-from github import Github
+from github import Auth, Github
 
 # the fixed identifier for the pull request that will
 # contain the feedback for the specified repository
