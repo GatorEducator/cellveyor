@@ -77,4 +77,4 @@ def transport(
         student_github = row[key_attribute]
         for column_name in selected_columns.columns:
             exam_value = row[column_name]
-            print(f"{key_attribute}: {student_github}, {column_name}: {exam_value}")
+            console.print(f"{key_attribute}: {student_github}, {column_name}: {exam_value}")
