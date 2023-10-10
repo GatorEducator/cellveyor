@@ -53,7 +53,7 @@ def transfer_reports_to_github(
 
 
 def transfer_report_to_github(github_token: str, repository: str, report: str) -> None:
-    """Transfer a report to GitHub."""
+    """Transfer a report to a pull request in a GitHub repository."""
     # authorize the conveyor app to access GitHub through
     # the use of the provided personal access token
     authorization = Auth.Token(github_token)
