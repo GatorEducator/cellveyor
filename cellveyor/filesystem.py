@@ -1,6 +1,8 @@
 """Check and access contents of the filesystem."""
 
+import json
 from pathlib import Path
+from typing import Dict, List
 
 
 def confirm_valid_file(file: Path) -> bool:
@@ -41,3 +43,28 @@ def confirm_valid_file_in_directory(
             return True
     # the combination of the provided file and directory are not valid
     return False
+
+
+def read_feedback_files(feedback_files_list: List[Path]) -> Dict[str, str]:
+    """Read all of the feedback files and return them in a combined dictionary."""
+    feedback_dict_list: List[Dict[str, str]] = []
+    # iterate through all of the provided feedback files
+    for feedback_file_path in feedback_files_list:
+        # confirm that the file is valid; if it is valid
+        # then its contents will be read and converted to a dictionary
+        if confirm_valid_file(feedback_file_path):
+            # read the contents of the file, which are a string
+            # that encodes a JSON file
+            feedback_file_contents = feedback_file_path.read_text()
+            # convert the string that encodes a JSON file to a dictionary
+            feedback_file_contents_dict = json.loads(feedback_file_contents)
+            # add the dictionary to the overall list of feedback dictionaries
+            feedback_dict_list.append(feedback_file_contents_dict)
+    # create an empty dictionary and then use it to store the
+    # unified contents of all of the other dictionaries coming from
+    # the previously input JSON file
+    feedback_dict_combined: Dict[str, str] = {}
+    for current_feedback_dict in feedback_dict_list:
+        feedback_dict_combined.update(current_feedback_dict)
+    # return the final dictionary that combines all dictionaries
+    return feedback_dict_combined
