@@ -61,6 +61,12 @@ def transport(  # noqa: PLR0913
         "-c",
         help="Regular expression for matching columns in specific sheet",
     ),
+    feedback_regexp: str = typer.Option(
+        ...,
+        "--feedback-regexp",
+        "-f",
+        help="Regular expression for matching feedback columns in specific sheet",
+    ),
     key_value: str = typer.Option(
         None,
         "--key-value",
@@ -129,7 +135,11 @@ def transport(  # noqa: PLR0913
     )
     # create a unique message for each row in the dataframe
     per_key_report = report.create_per_key_report(
-        key_attribute, result_df, selected_columns, combined_feedback_dict
+        key_attribute,
+        result_df,
+        selected_columns,
+        feedback_regexp,
+        combined_feedback_dict,
     )
     # display the generated reports
     display_reports(per_key_report)
