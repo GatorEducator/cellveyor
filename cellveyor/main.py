@@ -105,6 +105,9 @@ def transport(  # noqa: PLR0913
     # access all of the sheets inside of the valid spreadsheet file
     fully_qualified_spreadsheet_file = spreadsheet_directory / spreadsheet_file
     console.print(f":delivery_truck: Accessing: {fully_qualified_spreadsheet_file}")
+    # access all of the feedback files
+    combined_feedback_dict = filesystem.read_feedback_files(feedback_file)
+    console.print(combined_feedback_dict)
     # access the dictionary of all of the dataframes in the speadsheet;
     # note that each sheet in the spreadsheet can be accessed by:
     # --> name of the sheet: str
