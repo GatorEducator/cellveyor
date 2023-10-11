@@ -44,7 +44,6 @@ def create_per_key_report(
         key_attribute_value = str(row[key_attribute])
         # create a main label for the entire markdown-based report
         current_report = f"**Hello @{key_attribute_value}!**{NEWLINE}{NEWLINE}"
-        # current_report = current_report + f"{feedback_dict[HEADER]}{NEWLINE}"
         current_report = add_feedback_if_exists(current_report, feedback_dict, HEADER)
         current_report = current_report + f"**{SUMMARY_LABEL}**{NEWLINE}{NEWLINE}"
         # iterate through all of the extracted columns and add them to
