@@ -112,7 +112,6 @@ def transport(  # noqa: PLR0913
     # --> value: the actual content that will be placed in the location of the final message
     # in, for instance, the header or the footer or, alternatively, in the list of extra feedback
     combined_feedback_dict = filesystem.read_feedback_files(feedback_file)
-    console.print(combined_feedback_dict)
     # access the dictionary of all of the dataframes in the speadsheet;
     # note that each sheet in the spreadsheet can be accessed by:
     # --> name of the sheet: str
