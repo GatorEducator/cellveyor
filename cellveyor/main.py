@@ -1,14 +1,18 @@
 """🚚 Cellveyor is a conveyor for the cells in spreadsheets."""
 
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
+from typing import List
 
 import typer
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
-from cellveyor import data, filesystem, report, transfer
+from cellveyor import data
+from cellveyor import filesystem
+from cellveyor import report
+from cellveyor import transfer
 
 # create a Typer object to support the command-line interface
 cli = typer.Typer(no_args_is_help=True)
@@ -129,7 +133,7 @@ def transport(  # noqa: PLR0913
     )
     # create a unique message for each row in the dataframe
     per_key_report = report.create_per_key_report(
-        key_attribute, result_df, selected_columns
+        key_attribute, result_df, selected_columns, combined_feedback_dict
     )
     # display the generated reports
     display_reports(per_key_report)
