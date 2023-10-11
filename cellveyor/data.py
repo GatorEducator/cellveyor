@@ -30,7 +30,7 @@ def key_attribute_column_filter(
     # those columns that matched the regular expression
     result_df = sheet_dataframe[
         [key_attribute_name] + list(selected_columns.columns)  # noqa: RUF005
-    ].dropna()
+    ].dropna(how="all")
     # filter down further for the specific value of the key attribute;
     # this is particularly useful when extracting and reporting data
     # for a specific row inside of the matching dataframe
