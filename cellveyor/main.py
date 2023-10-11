@@ -107,10 +107,11 @@ def transport(  # noqa: PLR0913
     console.print(f":delivery_truck: Accessing: {fully_qualified_spreadsheet_file}")
     # access all of the feedback files and combine them into a single
     # dictionary organized in the following fashion:
-    # --> key: label like "<github-repository-prefix>-header" or "<github-repository-prefix>-footer"
-    # or a label that is found inside of a Google Sheet like "reassess"
-    # --> value: the actual content that will be placed in the location of the final message
-    # in, for instance, the header or the footer or, alternatively, in the list of extra feedback
+    # --> key: label like "header" or "footer" or a label
+    #          that is found inside of a Google Sheet like "reassess"
+    # --> value: the actual content that will be placed in the location of the final
+    #            message in, for instance, the header or the footer or, alternatively,
+    #            in the list of extra feedback
     combined_feedback_dict = filesystem.read_feedback_files(feedback_file)
     # access the dictionary of all of the dataframes in the speadsheet;
     # note that each sheet in the spreadsheet can be accessed by:
