@@ -1,12 +1,15 @@
 """Create reports based on content in dataframes."""
 
-from typing import Dict
+from typing import Dict, List
 
 from pandas import DataFrame
 
+COMMA = ","
 NEWLINE = "\n"
+
 HEADER = "header"
 FOOTER = "footer"
+
 SUMMARY_LABEL = "Here are your summary scores:"
 
 
@@ -26,10 +29,17 @@ def add_feedback_if_exists(
     return final_report
 
 
+def create_feedback_list(feedback_comma_list: str) -> List[str]:
+    """Create a list of feedback keys from a string with the lists separated by commas."""
+    feedback_list = [key.strip() for key in feedback_comma_list.split(COMMA)]
+    return feedback_list
+
+
 def create_per_key_report(
     key_attribute: str,
     result_dataframe: DataFrame,
     selected_columns: DataFrame,
+    feedback_regexp: str,
     feedback_dict: Dict[str, str],
 ) -> Dict[str, str]:
     """Create a per-key report for the provided dataframe."""
@@ -37,9 +47,16 @@ def create_per_key_report(
     # --> key: the value for the key attribute (normally a GitHub user name)
     # --> value: an entire report, encoded in markdown for display in the terminal
     # or upload to a markdown-aware platform like a GitHub issue or pull request
+    print(selected_columns)
+    print("Just fiunished first print")
     markdown_reports: Dict[str, str] = {}
+    # extract the column(s) that provide extra feedback in a comma-separate list
+    # selected_feedback_columns = selected_columns.filter(regex=feedback_regexp).dropna()
+    selected_feedback_columns = selected_columns.filter(regex=feedback_regexp)
+    print(selected_feedback_columns)
+    selected_columns = selected_columns.drop(selected_feedback_columns, axis=1)  # type: ignore
     # create a unique message for each row in the dataframe
-    for _, row in result_dataframe.iterrows():
+    for index, row in result_dataframe.iterrows():
         # extract the value of the key attribute
         key_attribute_value = str(row[key_attribute])
         # create a main label for the entire markdown-based report
@@ -56,6 +73,10 @@ def create_per_key_report(
             current_report = (
                 current_report + f"- **{column_name}**: {column_value}{NEWLINE}"
             )
+        # extract the specific row of feedback from the selected feedback columns
+        feedback_comma_list = selected_feedback_columns.iloc[index, 0]
+        print("TADA")
+        print(feedback_comma_list)
         current_report = current_report + f"{feedback_dict[FOOTER]}{NEWLINE}"
         # now that creation of the current_report is finished, store it
         # inside of the dictionary of the markdown_reports and move to the next one
