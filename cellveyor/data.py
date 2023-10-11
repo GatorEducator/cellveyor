@@ -24,7 +24,8 @@ def key_attribute_column_filter(
     """Extract a region of a dataframe defined by a key attribute and columns that match a regular expression."""
     # use the provided regular expression to extract from the data frame
     # only those columns that have a name that matches the regular expression
-    selected_columns = sheet_dataframe.filter(regex=column_regexp).dropna()
+    # selected_columns = sheet_dataframe.filter(regex=column_regexp).dropna()
+    selected_columns = sheet_dataframe.filter(regex=column_regexp)
     # extract the attribute that has the key name and also select all of
     # those columns that matched the regular expression
     result_df = sheet_dataframe[
