@@ -124,7 +124,7 @@ def transport(  # noqa: PLR0913
     # --> name of the sheet: str
     # --> dataframe of the sheet: pandas dataframe
     sheet_dataframe_dict = data.access_dataframes(fully_qualified_spreadsheet_file)
-    console.print(sheet_dataframe_dict.keys())
+    # console.print(sheet_dataframe_dict.keys())
     # access the requested sheet within the spreadsheet
     sheet_dataframe = sheet_dataframe_dict[sheet_name]
     # access the data for:
