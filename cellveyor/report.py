@@ -15,7 +15,7 @@ HEADER = "header"
 FOOTER = "footer"
 
 SUMMARY_LABEL = "Here are your summary scores:"
-FEEDBACK_LABEL = "Here is some additional feedback to consider:"
+FEEDBACK_LABEL = "Here is some additional feedback for you to consider:"
 
 
 def add_feedback_if_exists(
