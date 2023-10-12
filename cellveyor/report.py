@@ -84,6 +84,13 @@ def create_per_key_report(
     for index, row in result_dataframe.iterrows():
         # extract the value of the key attribute
         key_attribute_value = str(row[key_attribute])
+        # the key attribute value is "nan" (i.e., it is NaN from a Pandas dataframe), then
+        # this function does not need to create a report for it and we can move to the
+        # next value for the index and the row. Note that this NaN value might not have
+        # already been filtered from the dataframe because of the fact that previously
+        # called functions would have only removed a row if it was only made of NaNs
+        if key_attribute_value == NAN:
+            continue
         # create a main label for the entire markdown-based report
         current_report = f"**Hello @{key_attribute_value}!**{NEWLINE}{NEWLINE}"
         current_report = add_feedback_if_exists(current_report, feedback_dict, HEADER)
