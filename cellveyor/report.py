@@ -39,7 +39,8 @@ def add_feedback_if_exists(
         # then do not add that to the end of the feedback
         if not make_list:
             final_report = final_report + f"{feedback}{NEWLINE}"
-        # if the feedback should appear in a list, then 
+        # if the feedback should appear in a list, then make sure
+        # that it is prefaced with a dash and then a space
         else:
             final_report = final_report + f"{DASH}{SPACE}{feedback}"
     # return the potentially improved feedback report
