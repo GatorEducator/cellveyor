@@ -5,7 +5,9 @@ from typing import Dict, List
 from pandas import DataFrame
 
 COMMA = ","
+DASH = "-"
 NEWLINE = "\n"
+SPACE = " "
 
 HEADER = "header"
 FOOTER = "footer"
@@ -27,11 +29,17 @@ def add_feedback_if_exists(
     # the feedback dictionary contains the requested key and
     # thus this function should add the key's value to the report
     if feedback_key in feedback_dict:
+        # extract the specific feedback from the dictionary
         feedback = feedback_dict[feedback_key]
+        # if the function was not asked to create a list, then
+        # add the feedback and then a newline, a space, and then
+        # the message; since lists do not need newlines after them,
+        # then do not add that to the end of the feedback
         if not make_list:
             final_report = final_report + f"{feedback}{NEWLINE}"
+        # if the feedback should appear in a list, then 
         else:
-            final_report = final_report + f"- {feedback}"
+            final_report = final_report + f"{DASH}{SPACE}{feedback}"
     # return the potentially improved feedback report
     return final_report
 
