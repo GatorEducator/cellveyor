@@ -96,7 +96,8 @@ def create_per_key_report(
         for column_name in selected_columns.columns:
             column_value = row[column_name]
             current_report = (
-                current_report + f"- **{column_name}**: {column_value}{NEWLINE}"
+                current_report
+                + f"{DASH}{SPACE}**{column_name}**:{SPACE}{column_value}{NEWLINE}"
             )
         # extract the specific row of feedback from the selected feedback columns
         feedback_comma_list = str(selected_feedback_columns.iloc[index, 0])
@@ -106,11 +107,12 @@ def create_per_key_report(
                 current_report
                 + f"{NEWLINE}{NEWLINE}**{FEEDBACK_LABEL}**{NEWLINE}{NEWLINE}"
             )
+            # make an entry for each of the types of feedback, ensuring that
+            # each feedback is an entry inside of a list
             for feedback_key in feedback_list:
                 current_report = add_feedback_if_exists(
-                    current_report, feedback_dict, feedback_key, True
+                    current_report, feedback_dict, feedback_key, make_list=True
                 )
-                # current_report = current_report + f"- {current_feedback_value}{NEWLINE}{NEWLINE}"
         current_report = (
             current_report + f"{NEWLINE}{NEWLINE}{feedback_dict[FOOTER]}{NEWLINE}"
         )
