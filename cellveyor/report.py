@@ -9,6 +9,8 @@ DASH = "-"
 NEWLINE = "\n"
 SPACE = " "
 
+NAN = "nan"
+
 HEADER = "header"
 FOOTER = "footer"
 
@@ -46,9 +48,17 @@ def add_feedback_if_exists(
 
 def create_feedback_list(feedback_comma_list: str) -> List[str]:
     """Create a list of feedback keys from a string with the lists separated by commas."""
+    # extract all of the feedback that is in a comma separated string so that
+    # each of the entries within the comma-separated string are then their
+    # own entries inside of a list. Note that this will also extract data
+    # values that are "nan" because they were a part of a row that had some
+    # values in it mixed with "nan" values; these will be removed next
     feedback_list = [key.strip() for key in feedback_comma_list.split(COMMA)]
-    if "nan" in feedback_list:
-        feedback_list.remove("nan")
+    # if there is a "nan" value inside of the list, then go ahead and remove it
+    if NAN in feedback_list:
+        feedback_list.remove(NAN)
+    # return the completed list of feedback that results from converting
+    # a string that contains values to a list that contains those values
     return feedback_list
 
 
