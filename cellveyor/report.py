@@ -101,7 +101,10 @@ def create_per_key_report(
             )
         # extract the specific row of feedback from the selected feedback columns
         feedback_comma_list = str(selected_feedback_columns.iloc[index, 0])
+        # create a, potentially empty, list of feedback
         feedback_list = create_feedback_list(feedback_comma_list)
+        # if there is feedback, then add each of the feedback points
+        # in a list and then add the content that belongs in the footer
         if feedback_list:
             current_report = (
                 current_report
@@ -110,9 +113,13 @@ def create_per_key_report(
             # make an entry for each of the types of feedback, ensuring that
             # each feedback is an entry inside of a list
             for feedback_key in feedback_list:
+                # only add feedback in a list-based fashion when there is
+                # a feedback value for the key inside of the feedback dictionary
                 current_report = add_feedback_if_exists(
                     current_report, feedback_dict, feedback_key, make_list=True
                 )
+        # add the footer to the feedback report, making sure to add newlines that
+        # will provide adequate separation from the potential feedback list
         current_report = (
             current_report + f"{NEWLINE}{NEWLINE}{feedback_dict[FOOTER]}{NEWLINE}"
         )
