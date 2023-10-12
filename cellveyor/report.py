@@ -15,7 +15,10 @@ FEEDBACK_LABEL = "Here is some additional feedback to consider:"
 
 
 def add_feedback_if_exists(
-    report: str, feedback_dict: Dict[str, str], feedback_key: str, make_list: bool = False
+    report: str,
+    feedback_dict: Dict[str, str],
+    feedback_key: str,
+    make_list: bool = False,
 ) -> str:
     """Add feedback to the provided report if a specified key exists in the dictionary."""
     # the final report will start off as the contents
@@ -89,7 +92,9 @@ def create_per_key_report(
                     current_report, feedback_dict, feedback_key, True
                 )
                 # current_report = current_report + f"- {current_feedback_value}{NEWLINE}{NEWLINE}"
-        current_report = current_report + f"{NEWLINE}{NEWLINE}{feedback_dict[FOOTER]}{NEWLINE}"
+        current_report = (
+            current_report + f"{NEWLINE}{NEWLINE}{feedback_dict[FOOTER]}{NEWLINE}"
+        )
         # now that creation of the current_report is finished, store it
         # inside of the dictionary of the markdown_reports and move to the next one
         markdown_reports[key_attribute_value] = current_report
