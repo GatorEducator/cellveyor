@@ -79,10 +79,6 @@ def transport(  # noqa: PLR0913
         "-f",
         help="Feedback file(s) in JSON format",
     ),
-    transfer_report: bool = typer.Option(
-        False,
-        help="GitHub authorization token",
-    ),
     github_token: str = typer.Option(
         None,
         "--github-token",
@@ -100,6 +96,10 @@ def transport(  # noqa: PLR0913
         "--github-repository-prefix",
         "-p",
         help="Prefix for all GitHub repositories used as a destination",
+    ),
+    transfer_report: bool = typer.Option(
+        False,
+        help="Transfer a report to GitHub",
     ),
 ) -> None:
     """Transport a specified spreadsheet."""
