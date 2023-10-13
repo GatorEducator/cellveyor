@@ -30,6 +30,8 @@ pytest-clarity = "^1.0.1"
 pytest-randomly = "^3.13.0"
 pytest-pretty = "^1.2.0"
 pytest-xdist = "^3.3.1"
+types-pyyaml = "^6.0.12.12"
+pandas-stubs = "^2.1.1.230928"
 
 [tool.pytest.ini_options]
 filterwarnings = [
