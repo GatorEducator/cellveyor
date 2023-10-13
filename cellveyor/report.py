@@ -107,8 +107,6 @@ def create_per_key_report(
                 + f"{DASH}{SPACE}**{column_name}**:{SPACE}{column_value}{NEWLINE}"
             )
         # extract the specific row of feedback from the selected feedback columns
-        print(selected_feedback_columns.columns)
-        print(selected_feedback_columns)
         feedback_comma_list = str(selected_feedback_columns.iloc[index, 0])
         # create a, potentially empty, list of feedback
         feedback_list = create_feedback_list(feedback_comma_list)
