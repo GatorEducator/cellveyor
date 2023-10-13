@@ -77,7 +77,6 @@ def create_per_key_report(
     # or upload to a markdown-aware platform like a GitHub issue or pull request
     markdown_reports: Dict[str, str] = {}
     # extract the column(s) that provide extra feedback in a comma-separate list
-    # selected_feedback_columns = selected_columns.filter(regex=feedback_regexp).dropna()
     selected_feedback_columns = selected_columns.filter(regex=feedback_regexp)
     selected_columns = selected_columns.drop(selected_feedback_columns, axis=1)  # type: ignore
     # create a unique message for each row in the dataframe
@@ -107,6 +106,8 @@ def create_per_key_report(
                 + f"{DASH}{SPACE}**{column_name}**:{SPACE}{column_value}{NEWLINE}"
             )
         # extract the specific row of feedback from the selected feedback columns
+        print(selected_feedback_columns.columns)
+        print(selected_feedback_columns)
         feedback_comma_list = str(selected_feedback_columns.iloc[index, 0])
         # create a, potentially empty, list of feedback
         feedback_list = create_feedback_list(feedback_comma_list)
