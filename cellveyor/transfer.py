@@ -2,7 +2,7 @@
 
 from typing import Dict
 
-from github import Auth, Github
+from github import Auth, Github, GithubException
 
 # the fixed identifier for the pull request that will
 # contain the feedback for the specified repository
@@ -53,9 +53,15 @@ def transfer_reports_to_github(
             github_organization, github_repository_prefix, github_username
         )
         # transfer this specific report to the pull request in the GitHub repository
-        transfer_report_to_github(
-            github_token, current_github_repository, current_github_report_contents
-        )
+        try:
+            transfer_report_to_github(
+                github_token, current_github_repository, current_github_report_contents
+            )
+        except GithubException as github_exception:
+            print("Exception occurred when interacting with GitHub!")
+            print(f"More details: {github_exception}")
+            print(f"Skipping {current_github_repository} and going to the next one!")
+            continue
 
 
 def transfer_report_to_github(github_token: str, repository: str, report: str) -> None:
