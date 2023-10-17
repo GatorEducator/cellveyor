@@ -12,6 +12,8 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 
+# the checkmark that appears in the progress bar diagnostic
+# output when a transfer to GitHub works correctly
 CHECKMARK = "✓"
 
 # the dash that separates a GitHub repository prefix
@@ -32,6 +34,8 @@ PULL_REQUEST_ID = 1
 # extra space needed in error message output for problematic transfers
 SPACE = " "
 
+# the xmark that appears in the progress bar diagnostic
+# output when a transfer to GitHub does not work correctly
 XMARK = "✕"
 
 # error message to display when transfer problems occur
