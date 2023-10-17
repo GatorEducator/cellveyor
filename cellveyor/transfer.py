@@ -3,7 +3,6 @@
 from typing import Dict
 
 from github import Auth, Github, GithubException
-from rich.console import Console
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -45,10 +44,6 @@ STOP_MESSAGE = "Stopping report transfer to"
 DETAILS = "Details:"
 
 
-# create a default console
-console = Console()
-
-
 def create_fully_qualified_github_repository(
     github_organization: str, github_repository_prefix: str, github_username: str
 ) -> str:
@@ -74,7 +69,10 @@ def transfer_reports_to_github(
     github_reports_dict: Dict[str, str],
 ) -> None:
     """Transfer all reports to GitHub."""
+    # extract the keys for the different repositories on
+    # GitHub that will receive a report during this transfer
     github_report_keys = github_reports_dict.keys()
+    # create a customized progress bar using rich
     progress_bar = Progress(
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
         BarColumn(),
@@ -84,10 +82,11 @@ def transfer_reports_to_github(
         TextColumn("•"),
         TimeRemainingColumn(),
     )
+    # create a progress bar context for the transfer process
     with progress_bar as progress:
-        # task = progress.add_task("Transferring Reports:", total=len(github_report_keys))
-        current_completed = 0
-        # iterate through the list of completed reports
+        # iterate through the list of completed reports;
+        # use the progress bar's track function to dynamically
+        # track and update the progress bar display in the terminal
         for github_report_key in progress.track(github_report_keys):
             # the current key is the name of the GitHub user
             github_username = github_report_key
@@ -102,16 +101,25 @@ def transfer_reports_to_github(
             # other problem on the side of the GitHub servers and thus a try block is needed
             try:
                 transfer_report_to_github(
-                    github_token, current_github_repository, current_github_report_contents
+                    github_token,
+                    current_github_repository,
+                    current_github_report_contents,
                 )
-                progress.console.print(f"{CHECKMARK}{SPACE}[green]{current_github_repository}")
+                # use the
+                progress.console.print(
+                    f"{CHECKMARK}{SPACE}[green]{current_github_repository}"
+                )
             # an exception occurred when attempting to perform the transfer:
             # --> display an error message
             # --> give details about the exception
             # --> skip to the next report and attempt to transfer it
             except GithubException as github_exception:
-                progress.console.print(f"{XMARK}{SPACE}[red]{current_github_repository}")
-                progress.console.print(f"{INDENT}[red]{DETAILS}[/red]{SPACE}{github_exception}")
+                progress.console.print(
+                    f"{XMARK}{SPACE}[red]{current_github_repository}"
+                )
+                progress.console.print(
+                    f"{INDENT}[red]{DETAILS}[/red]{SPACE}{github_exception}"
+                )
                 continue
 
 
