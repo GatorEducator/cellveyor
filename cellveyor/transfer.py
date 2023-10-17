@@ -3,6 +3,7 @@
 from typing import Dict
 
 from github import Auth, Github, GithubException
+from rich.console import Console
 
 # the fixed identifier for the pull request that will
 # contain the feedback for the specified repository
@@ -15,6 +16,22 @@ FORWARD_SLASH = "/"
 # the dash that separates a GitHub repository prefix
 # from the GitHub username that owns the repository
 DASH = "-"
+
+DETAILS = "More details:"
+
+# indentation needed for nested message display
+INDENT = "   "
+
+# error message to display when transfer problems occur
+ERROR_MESSAGE = ":person_shrugging: Exception occurred when interacting with GitHub"
+
+STOP_MESSAGE = "Stopping report transfer to"
+
+# extra space needed in error message output for problematic transfers
+SPACE = " "
+
+# create a default console
+console = Console()
 
 
 def create_fully_qualified_github_repository(
@@ -53,14 +70,20 @@ def transfer_reports_to_github(
             github_organization, github_repository_prefix, github_username
         )
         # transfer this specific report to the pull request in the GitHub repository
+        # note that this may fail if the repository does not exist or there is some
+        # other problem on the side of the GitHub servers and thus a try block is needed
         try:
             transfer_report_to_github(
                 github_token, current_github_repository, current_github_report_contents
             )
+        # an exception occurred when attempting to perform the transfer:
+        # --> display an error message
+        # --> give details about the exception
+        # --> skip to the next report and attempt to transfer it
         except GithubException as github_exception:
-            print("Exception occurred when interacting with GitHub!")
-            print(f"More details: {github_exception}")
-            print(f"Skipping {current_github_repository} and going to the next one!")
+            console.print(f"{ERROR_MESSAGE}")
+            console.print(f"{INDENT}{DETAILS}{SPACE}{github_exception}")
+            console.print(f"{INDENT}{STOP_MESSAGE}{SPACE}'{current_github_repository}'")
             continue
 
 
