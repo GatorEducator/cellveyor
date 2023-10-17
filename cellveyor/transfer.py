@@ -5,30 +5,33 @@ from typing import Dict
 from github import Auth, Github, GithubException
 from rich.console import Console
 
-# the fixed identifier for the pull request that will
-# contain the feedback for the specified repository
-PULL_REQUEST_ID = 1
+# the dash that separates a GitHub repository prefix
+# from the GitHub username that owns the repository
+DASH = "-"
 
 # the forward slash used in the fully qualified
 # names of GitHub repositories
 FORWARD_SLASH = "/"
 
-# the dash that separates a GitHub repository prefix
-# from the GitHub username that owns the repository
-DASH = "-"
-
-DETAILS = "More details:"
-
 # indentation needed for nested message display
 INDENT = "   "
+
+# the fixed identifier for the pull request that will
+# contain the feedback for the specified repository
+PULL_REQUEST_ID = 1
+
+# extra space needed in error message output for problematic transfers
+SPACE = " "
 
 # error message to display when transfer problems occur
 ERROR_MESSAGE = ":person_shrugging: Exception occurred when interacting with GitHub"
 
+# message to indicate that the transfer will stop
 STOP_MESSAGE = "Stopping report transfer to"
 
-# extra space needed in error message output for problematic transfers
-SPACE = " "
+# prefix for the details from the error report
+DETAILS = "More details:"
+
 
 # create a default console
 console = Console()
