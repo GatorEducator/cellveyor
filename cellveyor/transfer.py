@@ -4,6 +4,16 @@ from typing import Dict
 
 from github import Auth, Github, GithubException
 from rich.console import Console
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+)
+
+CHECKMARK = "✓"
 
 # the dash that separates a GitHub repository prefix
 # from the GitHub username that owns the repository
@@ -14,7 +24,7 @@ DASH = "-"
 FORWARD_SLASH = "/"
 
 # indentation needed for nested message display
-INDENT = "   "
+INDENT = "  "
 
 # the fixed identifier for the pull request that will
 # contain the feedback for the specified repository
@@ -23,6 +33,8 @@ PULL_REQUEST_ID = 1
 # extra space needed in error message output for problematic transfers
 SPACE = " "
 
+XMARK = "✕"
+
 # error message to display when transfer problems occur
 ERROR_MESSAGE = ":person_shrugging: Exception occurred when interacting with GitHub"
 
@@ -30,7 +42,7 @@ ERROR_MESSAGE = ":person_shrugging: Exception occurred when interacting with Git
 STOP_MESSAGE = "Stopping report transfer to"
 
 # prefix for the details from the error report
-DETAILS = "More details:"
+DETAILS = "Details:"
 
 
 # create a default console
@@ -61,33 +73,46 @@ def transfer_reports_to_github(
     github_repository_prefix: str,
     github_reports_dict: Dict[str, str],
 ) -> None:
-    """Transfer a report to GitHub."""
-    # iterate through the list of completed reports
-    for github_report_key in github_reports_dict.keys():
-        # the current key is the name of the GitHub user
-        github_username = github_report_key
-        # extract the contents of the report to upload to the pull request comment
-        current_github_report_contents = github_reports_dict[github_username]
-        # create the fully qualified name of the GitHub repository
-        current_github_repository = create_fully_qualified_github_repository(
-            github_organization, github_repository_prefix, github_username
-        )
-        # transfer this specific report to the pull request in the GitHub repository
-        # note that this may fail if the repository does not exist or there is some
-        # other problem on the side of the GitHub servers and thus a try block is needed
-        try:
-            transfer_report_to_github(
-                github_token, current_github_repository, current_github_report_contents
+    """Transfer all reports to GitHub."""
+    github_report_keys = github_reports_dict.keys()
+    progress_bar = Progress(
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TextColumn("•"),
+        TimeElapsedColumn(),
+        TextColumn("•"),
+        TimeRemainingColumn(),
+    )
+    with progress_bar as progress:
+        # task = progress.add_task("Transferring Reports:", total=len(github_report_keys))
+        current_completed = 0
+        # iterate through the list of completed reports
+        for github_report_key in progress.track(github_report_keys):
+            # the current key is the name of the GitHub user
+            github_username = github_report_key
+            # extract the contents of the report to upload to the pull request comment
+            current_github_report_contents = github_reports_dict[github_username]
+            # create the fully qualified name of the GitHub repository
+            current_github_repository = create_fully_qualified_github_repository(
+                github_organization, github_repository_prefix, github_username
             )
-        # an exception occurred when attempting to perform the transfer:
-        # --> display an error message
-        # --> give details about the exception
-        # --> skip to the next report and attempt to transfer it
-        except GithubException as github_exception:
-            console.print(f"{ERROR_MESSAGE}")
-            console.print(f"{INDENT}{DETAILS}{SPACE}{github_exception}")
-            console.print(f"{INDENT}{STOP_MESSAGE}{SPACE}'{current_github_repository}'")
-            continue
+            # transfer this specific report to the pull request in the GitHub repository
+            # note that this may fail if the repository does not exist or there is some
+            # other problem on the side of the GitHub servers and thus a try block is needed
+            try:
+                transfer_report_to_github(
+                    github_token, current_github_repository, current_github_report_contents
+                )
+                progress.console.print(f"{CHECKMARK}{SPACE}[green]{current_github_repository}")
+            # an exception occurred when attempting to perform the transfer:
+            # --> display an error message
+            # --> give details about the exception
+            # --> skip to the next report and attempt to transfer it
+            except GithubException as github_exception:
+                progress.console.print(f"{XMARK}{SPACE}[red]{current_github_repository}")
+                progress.console.print(f"{INDENT}[red]{DETAILS}[/red]{SPACE}{github_exception}")
+                continue
 
 
 def transfer_report_to_github(github_token: str, repository: str, report: str) -> None:
