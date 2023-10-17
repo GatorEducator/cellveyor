@@ -38,12 +38,6 @@ SPACE = " "
 # output when a transfer to GitHub does not work correctly
 XMARK = "✕"
 
-# error message to display when transfer problems occur
-ERROR_MESSAGE = ":person_shrugging: Exception occurred when interacting with GitHub"
-
-# message to indicate that the transfer will stop
-STOP_MESSAGE = "Stopping report transfer to"
-
 # prefix for the details from the error report
 DETAILS = "Error:"
 
