@@ -41,7 +41,7 @@ ERROR_MESSAGE = ":person_shrugging: Exception occurred when interacting with Git
 STOP_MESSAGE = "Stopping report transfer to"
 
 # prefix for the details from the error report
-DETAILS = "Details:"
+DETAILS = "Error:"
 
 
 def create_fully_qualified_github_repository(
