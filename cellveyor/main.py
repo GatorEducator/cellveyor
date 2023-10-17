@@ -107,7 +107,7 @@ def transport(  # noqa: PLR0913
     if not filesystem.confirm_valid_file_in_directory(
         spreadsheet_file, spreadsheet_directory
     ):
-        console.print(":person_shrugging: Unable to access file and/or directory!")
+        console.print(":person_shrugging: Unable to access file and/or directory")
     # access all of the sheets inside of the valid spreadsheet file
     fully_qualified_spreadsheet_file = spreadsheet_directory / spreadsheet_file
     console.print(f":delivery_truck: Accessing: {fully_qualified_spreadsheet_file}")
