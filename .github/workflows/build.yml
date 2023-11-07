@@ -115,4 +115,4 @@ jobs:
         - name: Run and Report Test Coverage - MacOS Only
           if: always() && matrix.os == 'macOS'
           run: |
-            poetry run task test
+            poetry run task test-coverage
