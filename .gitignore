@@ -370,5 +370,5 @@ coverage.json
 # bash command history
 .bash_history
 
-# credentials json file
+# credentials json file report
 credentials.json
