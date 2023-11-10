@@ -2,7 +2,7 @@
 
 ## Example Command
 
-[![build](https://github.com/KevenDuverglas/keven-cellveyor/actions/workflows/build.yml/badge.svg)](https://https://github.com/KevenDuverglas/keven-cellveyor/actions/workflows/build.yml )
+[![build](https://github.com/KevenDuverglas/keven-cellveyor/actions/workflows/build.yml/badge.svg)](https://https://github.com/KevenDuverglas/keven-cellveyor/actions/workflows/build.yml)
 
 ```
 poetry run cellveyor --spreadsheet-directory \
