@@ -3,7 +3,8 @@
 ## Example Command
 
 [![build](https://github.com/KevenDuverglas/keven-cellveyor/actions/workflows/build.yml/badge.svg)](https://https://github.com/KevenDuverglas/keven-cellveyor/actions/workflows/build.yml)
-[![Language:Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://github.com/gkapfham/keven-cellveyor/search?l=python)
+[![Language:Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://github.com/KevenDuverglas/keven-cellveyor/search?l=python)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-Yes-blue.svg)](https://github.com/KevenDuverglas/keven-cellveyor/graphs/commit-activity)
 
 ```
 poetry run cellveyor --spreadsheet-directory \
