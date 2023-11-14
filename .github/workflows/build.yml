@@ -82,7 +82,7 @@ jobs:
         - name: Run program
           if: always()
           run: |
-            poetry run cellveyor --help
+            poetry run cellveyor --show-completion
         # Run the tests
         - name: Run Tests
           if: always()
