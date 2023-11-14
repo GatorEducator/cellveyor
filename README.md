@@ -7,9 +7,9 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-Yes-blue.svg)](https://github.com/gkapfham/cellveyor/graphs/commit-activity)
 
 ```
-poetry run cellveyor --spreadsheet-directory \
-/home/gkapfham/working/data/gradebook/2023 --spreadsheet-file
-CMPSC-203-Fall-2023-Gradebook.xlsx \
+poetry run cellveyor
+--spreadsheet-directory `directory-to-spreadsheet`
+--spreadsheet-file `directory-to-file`
 --sheet-name Main \
 --key-attribute "Student GitHub" \
 --key-value "gkapfham" \
