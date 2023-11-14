@@ -1,3 +1,9 @@
+# 💫 cellveyor
+
+[![build](https://github.com/gkapfham/cellveyor/actions/workflows/build.yml/badge.svg)](https://https://github.com/gkapfham/cellveyor/actions/workflows/build.yml)
+[![Language:Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://github.com/gkapfham/cellveyor/search?l=python)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-Yes-blue.svg)](https://github.com/gkapfham/cellveyor/graphs/commit-activity)
+
 ## 🎉 Introduction
 
 - **Cellveyor** is a python program that uses
