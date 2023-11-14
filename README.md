@@ -1,42 +1,11 @@
 # cellveyor
 
-<<<<<<< HEAD
-[![build](https://github.com/gkapfham/cellveyor/actions/workflows/build.yml/badge.svg)](https://https://github.com/gkapfham/cellveyor/actions/workflows/build.yml)
-[![Language:Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://github.com/gkapfham/cellveyor/search?l=python)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-Yes-blue.svg)](https://github.com/gkapfham/cellveyor/graphs/commit-activity)
-
-## Command Template
-
-```
-poetry run cellveyor --spreadsheet-directory \
---spreadsheet-file <Spreadsheet Filename> \
---sheet-name <Sheet Name> \
---key-attribute "<Key Attribute Name>" \
---key-value "<Key Value>" \
---column-regexp "<Column Regular Expression>" \
---feedback-regexp "<Feedback Column Regular Expression>" \
---feedback-file <Path to General Feedback File> \
---feedback-file <Path to Specific Feedback File> \
---github-token <Private GitHub Access Token> \
---github-organization <GitHub Organization Name> \
---github-repository-prefix <Repository Prefix> \
---transfer-report
-```
-
-### Example Command
-
-```
-poetry run cellveyor --spreadsheet-directory \
-/home/gkapfham/working/data/gradebook/2023
---spreadsheet-file CMPSC-203-Fall-2023-Gradebook.xlsx \
-=======
 ## Example Command
 
 ```
 poetry run cellveyor --spreadsheet-directory \
 /home/gkapfham/working/data/gradebook/2023 --spreadsheet-file
 CMPSC-203-Fall-2023-Gradebook.xlsx \
->>>>>>> d30df9e41ae6123760000329f8fbe099d99fa6c0
 --sheet-name Main \
 --key-attribute "Student GitHub" \
 --key-value "gkapfham" \
