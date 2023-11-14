@@ -22,7 +22,7 @@ poetry run cellveyor --spreadsheet-directory \
 --transfer-report
 ```
 
-### Other Example Command 
+### Other Example Command
 
 ```
 poetry run cellveyor --spreadsheet-directory \
