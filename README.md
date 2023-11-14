@@ -1,6 +1,8 @@
 # cellveyor
 
+
 ## Example Command
+
 
 ```
 poetry run cellveyor --spreadsheet-directory \
@@ -17,3 +19,48 @@ poetry run cellveyor --spreadsheet-directory \
 --github-repository-prefix computer-science-203-fall-2023-course-assessment \
 --transfer-report
 ```
+
+
+🎉 Introduction
+
+
+😂 Definitions
+
+
+🔋Features
+
+
+⚡️ Requirements
+
+
+🔽 Installation
+
+
+🐋 Docker
+
+
+🪂 Configuration
+
+
+✨ Analysis
+
+
+🚧 Integration
+
+
+🌄 Results
+
+
+🌎 Deployment
+
+
+🤯 Interaction
+
+
+📊Log
+
+
+🤗 Learning
+
+
+
