@@ -4,7 +4,7 @@
 [![Language:Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://github.com/gkapfham/cellveyor/search?l=python)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-Yes-blue.svg)](https://github.com/gkapfham/cellveyor/graphs/commit-activity)
 
-## Example Command
+## Command Template
 
 ```
 poetry run cellveyor --spreadsheet-directory \
@@ -22,7 +22,7 @@ poetry run cellveyor --spreadsheet-directory \
 --transfer-report
 ```
 
-### Other Example Command
+### Example Command
 
 ```
 poetry run cellveyor --spreadsheet-directory \
