@@ -9,7 +9,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 import gspread
 
-from cellveyor import data, filesystem, report, transfer
+from cellveyor import data, filesystem, report, transfer, constants
 
 # create a Typer object to support the command-line interface
 cli = typer.Typer(no_args_is_help=True)
@@ -21,13 +21,16 @@ console = Console()
 def display_reports(reports_dict: Dict[str, str]) -> None:
     """Display all of the reports in the reports dictionary."""
     # iterate through all of the keys
+    gc = gspread.oauth()
     for current_report_key in reports_dict.keys():
         # extract the report for the current key
         current_report = reports_dict[current_report_key]
+        sh = gc.open_by_url(current_report)
         # display the report inside of a rich panel, using
         # a markdown-based formatter for the report's contents
         console.print(Panel(Markdown(current_report), title="Report", expand=False))
         console.print()
+        console.print(sh.sheet1.get())
 
 
 @cli.command()

@@ -11,9 +11,6 @@ class Cellveyor:
     Application_Name: str
     Application_Author: str
     Cellveyor_Database_View: str
-    Emoji: str
-    Executable_Fly: str
-    Executable_Vercel: str
     Https: str
     Name: str
     Programming_Language: str
@@ -29,15 +26,12 @@ cellveyor = Cellveyor(
     Application_Name="cellveyor",
     Application_Author="CellveyorTeam",
     Cellveyor_Database_View="cellveyor_complete",
-    Emoji=":dizzy:",
-    Executable_Fly="fly",
-    Executable_Vercel="vercel",
     Https="https://",
     Name="cellveyor",
     Programming_Language="python",
     Separator="/",
-    Server_Shutdown=":person_shrugging: Shut down cellveyor's sylog server",
-    Tagline="Cellveyor: Collecting processed spreadsheet data",
+    Server_Shutdown=":person_shrugging: Shut down cellveyor's server",
+    Tagline="Cellveyor: The conveyor for spreadsheet cells",
     Theme_Background="default",
     Theme_Colors="ansi_dark",
     Website=":link: GitHub: https://github.com/GatorEducator/cellveyor",
@@ -52,13 +46,11 @@ class Checks:
     Check_Code: str
     Check_Count: str
     Check_Confidence: int
-    Check_File: str
+    Check_Spreadsheet: str
     Check_Id: str
     Checks_Label: str
-    Check_Max: str
-    Check_Min: str
     Check_Name: str
-    Check_Pattern: str
+    Check_Cell: str
 
 
 checks = Checks(
@@ -66,13 +58,11 @@ checks = Checks(
     Check_Code="code",
     Check_Count="count",
     Check_Confidence=80,
-    Check_File="checks-file",
+    Check_Spreadsheet="spreadsheet",
     Check_Id="id",
     Checks_Label="checks",
-    Check_Max="max",
-    Check_Min="min",
     Check_Name="name",
-    Check_Pattern="pattern",
+    Check_Cell="cell",
 )
 
 # filesystem constant
@@ -85,9 +75,8 @@ class Filesystem:
     Dot: str
     Main_Configuration_File: str
     Main_Checks_File: str
-    Main_Results_File_Name: str
-    Main_Results_Combined_File_Name: str
-    Main_Results_Flattened_Directory_Name: str
+    Current_Report_Name: str
+    Cell_Name: str
     Results_Extension: str
 
 
@@ -97,9 +86,8 @@ filesystem = Filesystem(
     Dot=".",
     Main_Configuration_File="config.yml",
     Main_Checks_File="checks.yml",
-    Main_Results_File_Name="cellveyor-results",
-    Main_Results_Combined_File_Name="cellveyor-integrated-results",
-    Main_Results_Flattened_Directory_Name="cellveyor-flattened-csvs-sqlite-db",
+    Current_Report_Name="cellveyor-report",
+    Cell_Name="cell-report",
     Results_Extension="",
 )
 
@@ -113,7 +101,6 @@ class Humanreadable:
 
 
 humanreadable = Humanreadable(Yes="Yes", No="No")
-
 
 # logger constant
 @dataclass(frozen=True)
@@ -131,6 +118,7 @@ logger = Logger(
     Syslog="cellveyor-syslog",
 )
 
+
 # logging constant
 @dataclass(frozen=True)
 class Logging:
@@ -142,7 +130,6 @@ class Logging:
     Error: str
     Critical: str
     Console_Logging_Destination: str
-    Syslog_Logging_Destination: str
     Default_Logging_Destination: str
     Default_Logging_Level: str
     Format: str
@@ -150,13 +137,11 @@ class Logging:
 
 
 logging = Logging(
-    Debug="DEBUG",
     Info="INFO",
     Warning="WARNING",
     Error="ERROR",
     Critical="CRITICAL",
     Console_Logging_Destination="CONSOLE",
-    Syslog_Logging_Destination="syslog",
     Default_Logging_Destination="console",
     Default_Logging_Level="ERROR",
     Format="%(message)s",
@@ -168,9 +153,6 @@ logging = Logging(
 class Markers:
     """Define the Markers dataclass for constant(s)."""
 
-    Bad_Fifteen: str
-    Bad_Zero_Zero: str
-    Code_Context: int
     Comma_Space: str
     Empty_Bytes: bytes
     Empty_String: str
@@ -194,9 +176,7 @@ class Markers:
 
 
 markers = Markers(
-    Bad_Fifteen="<15>",
-    Bad_Zero_Zero="",
-    Code_Context=5,
+
     Comma_Space=", ",
     Empty_Bytes=b"",
     Empty_String="",
@@ -230,31 +210,7 @@ class Output:
 
 
 output = Output(
-    Syslog=":sparkles: Syslog server for receiving debugging information",
+
+    Syslog="",
     Test_Start=":sparkles: Start to run test suite for the specified program",
-)
-
-
-# server constant
-@dataclass(frozen=True)
-class Server:
-    """Define the Server dataclass for constant(s)."""
-
-    Backup_Count: int
-    Localhost: str
-    Log_File: str
-    Max_Log_Size: int
-    Poll_Interval: float
-    Port: int
-    Utf8_Encoding: str
-
-
-server = Server(
-    Backup_Count=1,
-    Localhost="127.0.0.1",
-    Log_File=".discover.log",
-    Max_Log_Size=1048576,
-    Poll_Interval=0.5,
-    Port=2525,
-    Utf8_Encoding="utf-8",
 )
