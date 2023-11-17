@@ -102,51 +102,6 @@ class Humanreadable:
 
 humanreadable = Humanreadable(Yes="Yes", No="No")
 
-# logger constant
-@dataclass(frozen=True)
-class Logger:
-    """Define the Logger dataclass for constant(s)."""
-
-    Function_Prefix: str
-    Richlog: str
-    Syslog: str
-
-
-logger = Logger(
-    Function_Prefix="configure_logging_",
-    Richlog="cellveyor-richlog",
-    Syslog="cellveyor-syslog",
-)
-
-
-# logging constant
-@dataclass(frozen=True)
-class Logging:
-    """Define the Logging dataclass for constant(s)."""
-
-    Debug: str
-    Info: str
-    Warning: str
-    Error: str
-    Critical: str
-    Console_Logging_Destination: str
-    Default_Logging_Destination: str
-    Default_Logging_Level: str
-    Format: str
-    Rich: str
-
-
-logging = Logging(
-    Info="INFO",
-    Warning="WARNING",
-    Error="ERROR",
-    Critical="CRITICAL",
-    Console_Logging_Destination="CONSOLE",
-    Default_Logging_Destination="console",
-    Default_Logging_Level="ERROR",
-    Format="%(message)s",
-    Rich="Rich",
-)
 
 # markers constant
 @dataclass(frozen=True)
@@ -166,7 +121,6 @@ class Markers:
     Nothing: str
     Single_Quote: str
     Slice_One: int
-    Small_Bullet_Unicode: str
     Space: str
     Tab: str
     Underscore: str
@@ -190,7 +144,6 @@ markers = Markers(
     Nothing="",
     Single_Quote="'",
     Slice_One=1,
-    Small_Bullet_Unicode="\u2022",
     Space=" ",
     Tab="\t",
     Underscore="_",
@@ -205,12 +158,10 @@ markers = Markers(
 class Output:
     """Define the Output dataclass for constant(s)."""
 
-    Syslog: str
     Test_Start: str
 
 
 output = Output(
 
-    Syslog="",
     Test_Start=":sparkles: Start to run test suite for the specified program",
 )
