@@ -82,7 +82,7 @@ jobs:
         - name: Run program
           if: always()
           run: |
-            poetry run cellveyor --show-completion
+            poetry run cellveyor --spreadsheet-directory $PWD/spreadsheets/ --spreadsheet-file $PWD/spreadsheets/fake_spreadsheet.xlsx/ --sheet-name Main --key-attribute "Student GitHub" --key-value "gkapfham" --column-regexp '^(Summary Grade|Final Grade) .*$' --feedback-regexp "Summary Grade 1 - Feedback" --feedback-file $PWD/spreadsheets/feedback.yml/ 
         # Run the tests
         - name: Run Tests
           if: always()
