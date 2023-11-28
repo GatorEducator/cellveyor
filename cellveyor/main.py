@@ -1,6 +1,5 @@
 """🚚 Cellveyor is a conveyor for the cells in spreadsheets."""
 
-import sys
 from pathlib import Path
 from typing import Dict, List
 
@@ -21,16 +20,13 @@ console = Console()
 def display_reports(reports_dict: Dict[str, str]) -> None:
     """Display all of the reports in the reports dictionary."""
     # iterate through all of the keys
-    gc = gspread.oauth()
     for current_report_key in reports_dict.keys():
         # extract the report for the current key
         current_report = reports_dict[current_report_key]
-        sh = gc.open_by_url(current_report)
         # display the report inside of a rich panel, using
         # a markdown-based formatter for the report's contents
         console.print(f"{constants.markers.Indent} {Panel(Markdown(current_report), title='Report', expand=False)}")
         console.print()
-        console.print(sh.sheet1.get())
 
 
 @cli.command()
@@ -112,7 +108,6 @@ def transport(  # noqa: PLR0913
         spreadsheet_file, spreadsheet_directory
     ):
         console.print(":person_shrugging: Unable to access file and/or directory")
-        sys.exit(constants.markers.Non_Zero_Exit)
     # access all of the sheets inside of the valid spreadsheet file
     fully_qualified_spreadsheet_file = spreadsheet_directory / spreadsheet_file
     console.print(f":delivery_truck: Accessing: {fully_qualified_spreadsheet_file}")
