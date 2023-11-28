@@ -1,0 +1,4 @@
+footer:
+  - type: markdown
+    attributes:
+    value: "This is a footer"

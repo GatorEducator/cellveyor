@@ -52,4 +52,3 @@ def test_fuzz_confirm_valid_directory_using_builds(directory: pathlib.Path) -> N
 def test_fuzz_confirm_valid_file_using_builds(file: pathlib.Path) -> None:
     """Confirm that the function does not crash."""
     filesystem.confirm_valid_file(file=file)
-
