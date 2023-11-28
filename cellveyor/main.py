@@ -1,5 +1,6 @@
 """🚚 Cellveyor is a conveyor for the cells in spreadsheets."""
 
+import sys
 from pathlib import Path
 from typing import Dict, List
 
@@ -28,7 +29,7 @@ def display_reports(reports_dict: Dict[str, str]) -> None:
         sh = gc.open_by_url(current_report)
         # display the report inside of a rich panel, using
         # a markdown-based formatter for the report's contents
-        console.print(Panel(Markdown(current_report), title="Report", expand=False))
+        console.print(f"{constants.markers.Indent} {Panel(Markdown(current_report), title='Report', expand=False)}")
         console.print()
         console.print(sh.sheet1.get())
 
@@ -112,6 +113,7 @@ def transport(  # noqa: PLR0913
         spreadsheet_file, spreadsheet_directory
     ):
         console.print(":person_shrugging: Unable to access file and/or directory")
+        sys.exit(constants.markers.Non_Zero_Exit)
     # access all of the sheets inside of the valid spreadsheet file
     fully_qualified_spreadsheet_file = spreadsheet_directory / spreadsheet_file
     console.print(f":delivery_truck: Accessing: {fully_qualified_spreadsheet_file}")
