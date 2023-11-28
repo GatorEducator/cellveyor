@@ -27,6 +27,13 @@ this will quickly and automatically send out these reports in a very timely and 
 
 
  😂 Definitions
+- Cellveyor (uncountable or singular noun) "a tool that automatically produces a report based output by analyzing a
+google sheet"
+    - Student sentence: 
+    - Instructor sentence: "cellveyor makes it much easier for me to tell my students what their grade looks like
+    on a certain assignment"
+    - Researchers sentence: "I found that cellveyor is a very interesting tool that quickly and automatically does
+    a task that is necessary in schooling"
 
 
  🔋Features
