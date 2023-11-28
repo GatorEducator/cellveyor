@@ -52,13 +52,3 @@ Follow these steps to install the cellveyor program:
 2. ```Git clone``` the repository onto your personal computer
 - ```git clone (ssh key)``
 3. type ```poetry run cellveyor --help``` to learn how to use the tool
-
- 🪂 Configuration
-
- ✨ Analysis
-
- 🚧 Integration
-
- 🌄 Results
-
- 🌎 Deployment
