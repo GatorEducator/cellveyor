@@ -17,3 +17,46 @@ poetry run cellveyor --spreadsheet-directory \
 --github-repository-prefix computer-science-203-fall-2023-course-assessment \
 --transfer-report
 ```
+
+🎉 Introduction
+
+- Cellveyor is a python program that produces assignment reports for students or classes. Using cellveyor will
+publicly give grade reports including feedback for created assignments. Using the cellveyor tool will quickly
+run and send reports to members included in a locally created google spreadsheet. By running the command created,
+this will quickly and automatically send out these reports in a very timely and efficient fashion.
+
+
+ 😂 Definitions
+
+
+ 🔋Features
+
+
+ ⚡️ Requirements
+- Cellveyor git hub repository
+- Local google sheet
+- Git hub token
+
+ 🔽 Installation
+Follow these steps to install the cellveyor program:
+1. Copy the ssh key of the repo
+2. ```Git clone``` the repository onto your personal computer
+- ```git clone (ssh key)``
+3. type ```poetry run cellveyor --help``` to learn how to use the tool
+
+ 🪂 Configuration
+
+
+ ✨ Analysis
+
+
+ 🚧 Integration
+
+
+ 🌄 Results
+
+
+ 🌎 Deployment
+
+
+
