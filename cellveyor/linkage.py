@@ -1,29 +1,42 @@
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+import pandas as pd
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
 
-# Load your credentials from the JSON file
-credentials = ServiceAccountCredentials.from_json_keyfile_name(['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive'])
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+SERVICE_ACCOUNT_FILE = '/Users/stephenrodriguez/Documents/software_engineer/cellveyor/service.json'
+SAMPLE_SPREADSHEET_ID = "10mMsPZtKWREUIxqOzTQViSiqBsjeDHWqDMJtxOi-L34"
 
-# Authenticate with the Google Sheets API
-gc = gspread.authorize(Cellveyor-Sample-Gradebook-Shared)
+creds = service_account.Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE, scopes=SCOPES
+)
 
-# Open the Google Sheets document by its title or URL
-spreadsheet = gc.open('https://docs.google.com/spreadsheets/d/10mMsPZtKWREUIxqOzTQViSiqBsjeDHWqDMJtxOi-L34/edit#gid=0')
+service = build("sheets", "v4", credentials=creds)
+sheets = service.spreadsheets()
 
-# Access a specific worksheet
-worksheet = spreadsheet.get_worksheet(0)
+# Get a list of all sheets in the spreadsheet
+spreadsheet_metadata = sheets.get(spreadsheetId=SAMPLE_SPREADSHEET_ID).execute()
+sheet_names = [sheet['properties']['title'] for sheet in spreadsheet_metadata['sheets']]
 
+# Create a dictionary to store DataFrames for each sheet
+dataframes = {}
 
+# Iterate through each sheet and fetch the data
+for sheet_name in sheet_names:
+    result = (
+        sheets.values()
+        .get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=f"{sheet_name}!A1:S")
+        .execute()
+    )
 
+    values = result.get("values", [])
 
+    # Convert the data to a Pandas DataFrame
+    if values:
+        df = pd.DataFrame(values[1:], columns=values[0])
+        dataframes[sheet_name] = df
 
-
-# cell_value = worksheet.cell(1, 1).value
-# print(f"Value at (1, 1): {cell_value}")
-
-
-# worksheet.update('A2', 'New Value')
-
-
-# cell_value = worksheet.cell(2, 1).value
-# print(f"Value at (2, 1): {cell_value}")
+# Access the DataFrames as needed
+for sheet_name, df in dataframes.items():
+    print(f"Sheet Name: {sheet_name}")
+    print(df)
+    print("=" * 50)
