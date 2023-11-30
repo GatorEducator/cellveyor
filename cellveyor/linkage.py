@@ -13,7 +13,7 @@ creds = service_account.Credentials.from_service_account_file(
 service = build("sheets", "v4", credentials=creds)
 sheets = service.spreadsheets()
 
-# Get a list of all sheets in the spreadsheet
+# Getting list of all sheets in the spreadsheet
 spreadsheet_metadata = sheets.get(spreadsheetId=SAMPLE_SPREADSHEET_ID).execute()
 sheet_names = [sheet['properties']['title'] for sheet in spreadsheet_metadata['sheets']]
 
