@@ -37,6 +37,7 @@ cellveyor = Cellveyor(
     Website=":link: GitHub: https://github.com/GatorEducator/cellveyor",
 )
 
+
 # filesystem constant
 @dataclass(frozen=True)
 class Filesystem:
@@ -46,11 +47,13 @@ class Filesystem:
     Dash: str
     Dot: str
 
+
 filesystem = Filesystem(
     Current_Directory=".",
     Dash="-",
     Dot=".",
 )
+
 
 # humanreadable constant
 @dataclass(frozen=True)
@@ -63,18 +66,17 @@ class Humanreadable:
 
 humanreadable = Humanreadable(Yes="Yes", No="No")
 
+
 # markers constant
 @dataclass(frozen=True)
 class Markers:
     """Define the Markers dataclass for constant(s)."""
 
-    Indent = str
-    Zero_Exit: int
+    Indent: str
+    Newline: str
 
 
 markers = Markers(
-    Indent="   ",
-    Non_Zero_Exit=1,
+    Indent="    ",
+    Newline="\n",
 )
-
-
