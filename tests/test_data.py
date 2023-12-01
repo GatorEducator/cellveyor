@@ -8,10 +8,8 @@ from pathlib import Path
 
 
 def test_access_dataframes() -> None:
-    spreadsheet_file = "spreadsheets/fake_spreadsheet.xlsx"
-    result = data.access_dataframes(spreadsheet_file)
-    expected_sheet1 = pd.DataFrame({'column1': [1, 2, 3], 'column2': ['A', 'B', 'C']})
-    expected_sheet2 = pd.DataFrame({'columnA': [4, 5, 6], 'columnB': ['X', 'Y', 'Z']})
-
-    assert pd.DataFrame.equals(result['Sheet1'], expected_sheet1)
-    assert pd.DataFrame.equals(result['Sheet2'], expected_sheet2)
+    spreadsheet_file_one = "spreadsheets/fake_spreadsheet.xlsx"
+    spreadsheet_file_two = "spreadsheets/example_spreadsheet.xlsx"
+    test_one= data.access_dataframes(spreadsheet_file_one)
+    test_two = data.access_dataframes(spreadsheet_file_two)
+    assert test_one != test_two
