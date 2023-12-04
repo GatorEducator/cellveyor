@@ -1,7 +1,6 @@
 """Create reports based on content in dataframes."""
 
-from typing import Dict
-from typing import List
+from typing import Dict, List
 
 from pandas import DataFrame
 

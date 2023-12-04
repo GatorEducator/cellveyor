@@ -1,8 +1,7 @@
 """Access and manipulate data."""
 
 from pathlib import Path
-from typing import Dict
-from typing import Tuple
+from typing import Dict, Tuple
 
 import pandas
 

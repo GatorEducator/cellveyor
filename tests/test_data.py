@@ -2,9 +2,6 @@
 
 from pathlib import Path
 
-import pandas as pd
-import pytest
-
 from cellveyor import data
 
 

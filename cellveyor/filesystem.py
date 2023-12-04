@@ -1,8 +1,7 @@
 """Check and access contents of the filesystem."""
 
 from pathlib import Path
-from typing import Dict
-from typing import List
+from typing import Dict, List
 
 import yaml
 
