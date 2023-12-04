@@ -2,15 +2,15 @@
 
 from typing import Dict
 
-from github import Auth, Github, GithubException
-from rich.progress import (
-    BarColumn,
-    MofNCompleteColumn,
-    Progress,
-    TextColumn,
-    TimeElapsedColumn,
-    TimeRemainingColumn,
-)
+from github import Auth
+from github import Github
+from github import GithubException
+from rich.progress import BarColumn
+from rich.progress import MofNCompleteColumn
+from rich.progress import Progress
+from rich.progress import TextColumn
+from rich.progress import TimeElapsedColumn
+from rich.progress import TimeRemainingColumn
 
 # the checkmark that appears in the progress bar diagnostic
 # output when a transfer to GitHub works correctly

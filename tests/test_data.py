@@ -1,10 +1,11 @@
 """Pytest test suite for the filesystem module."""
 
-import pytest
+from pathlib import Path
 
 import pandas as pd
+import pytest
+
 from cellveyor import data
-from pathlib import Path
 
 
 def test_access_dataframes() -> None:
