@@ -32,22 +32,22 @@ developer-development/feedback-overall-course-assessment.yml \
 ## 🎉 Introduction
 
 - Cellveyor is a python program that produces assignment reports for students or
-classes. Using cellveyor will publicly give grade reports including feedback for
-created assignments. Using the cellveyor tool will quickly run and send reports to
+classes. Using Cellveyor will publicly give grade reports including feedback for
+created assignments. Using the Cellveyor tool will quickly run and send reports to
 members included in a locally created google spreadsheet. By running the command
 created, this will quickly and automatically send out these reports in a very timely
 and efficient fashion.
 
-## 😂 Definitions
+## 😂 Definitons
 
-- Cellveyor (uncountable or singular noun) "a tool that automatically produces a
-report based output by analyzing a Google sheet"
-    - Student sentence: "I'm glad cellveyor made it easy for me to see my grades
+- Cellveyor is a tool that automatically produces a report based output by
+analyzing a Google sheet
+    - Student sentence: "I'm glad Cellveyor made it easy for me to see my grades
     from my classes, it's so easy to read and analyze."
     - Instructor sentence: "Cellveyor makes it much easier for me to tell my
     students what their grade looks like on a certain assignment or overall
     in the class"
-    - Researchers sentence: "I found that cellveyor is a very interesting tool that
+    - Researchers sentence: "I found that Cellveyor is a very interesting tool that
     quickly and automatically does a task that is necessary in schooling"
 
 ## 🔋Features
@@ -64,7 +64,7 @@ report based output by analyzing a Google sheet"
 
 ## 🔽 Installation
 
-Follow these steps to install the cellveyor program:
+Follow these steps to install the Cellveyor program:
 1. Copy the ssh key of the repo
 2. ```Git clone``` the repository onto your personal computer
     - ```git clone (ssh key)```
