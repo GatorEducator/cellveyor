@@ -1,5 +1,4 @@
-<img src="https://github.com/GatorEducator/cellveyor/blob/master/.github/images/
-cellveyor-logo.svg" alt="Cellveyor Logo"
+<img src="https://github.com/GatorEducator/cellveyor/blob/master/.github/images/cellveyor-logo.svg" alt="Cellveyor Logo"
     title="Cellveyor Logo" />
 
 # Cellveyor
