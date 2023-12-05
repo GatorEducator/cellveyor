@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+
 # humanreadable constant
 @dataclass(frozen=True)
 class Humanreadable:
@@ -10,7 +11,9 @@ class Humanreadable:
     Yes: str
     No: str
 
+
 humanreadable = Humanreadable(Yes="Yes", No="No")
+
 
 # markers constant
 @dataclass(frozen=True)
