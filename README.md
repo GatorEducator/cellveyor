@@ -1,4 +1,5 @@
-<img src="https://github.com/GatorEducator/cellveyor/blob/master/.github/images/cellveyor-logo.svg" alt="Cellveyor Logo"
+<img src="https://github.com/GatorEducator/cellveyor/blob/master/.github/images/
+cellveyor-logo.svg" alt="Cellveyor Logo"
     title="Cellveyor Logo" />
 
 # Cellveyor
@@ -40,14 +41,14 @@ and efficient fashion.
 
 ## 😂 Definitions
 
-- Cellveyor (uncountable or singular noun) "a tool that automatically produces a report based output
-by analyzing a Google sheet"
-    - Student sentence: "I'm glad cellveyor made it easy for me to see my grades from my classes, it's
-    so easy to read and analyze."
-    - Instructor sentence: "Cellveyor makes it much easier for me to tell my students what their
-    grade looks like on a certain assignment or overall in the class"
-    - Researchers sentence: "I found that cellveyor is a very interesting tool that quickly and
-    automatically does a task that is necessary in schooling"
+- Cellveyor (uncountable or singular noun) "a tool that automatically produces a report
+based outputby analyzing a Google sheet"
+    - Student sentence: "I'm glad cellveyor made it easy for me to see my grades from my
+    classes, it's so easy to read and analyze."
+    - Instructor sentence: "Cellveyor makes it much easier for me to tell my students what
+    their grade looks like on a certain assignment or overall in the class"
+    - Researchers sentence: "I found that cellveyor is a very interesting tool that quickly
+    and automatically does a task that is necessary in schooling"
 
 ## 🔋Features
 
