@@ -10,7 +10,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 
 from cellveyor import data, filesystem, report, transfer, linkage  
-from cellveyor import linkage 
+from linkage import fetch_data
 
 
 # create a Typer object to support the command-line interface
@@ -18,7 +18,6 @@ cli = typer.Typer(no_args_is_help=True)
 
 # create a default console
 console = Console()
-
 
 def display_reports(reports_dict: Dict[str, str]) -> None:
     """Display all of the reports in the reports dictionary."""
@@ -58,6 +57,16 @@ def transport(  # noqa: PLR0913
         "--save-credentials",
         "-sc",
         help="Save credentials.json file and service account file",
+    ),
+    service_account_file: str = typer.Option(
+        ...,
+        "--service-account-file",
+        help="Path to the service account JSON file for linkage",
+    ),
+    spreadsheet_id: str = typer.Option(
+        ...,
+        "--spreadsheet-id",
+        help="ID of the Google Spreadsheet for linkage",
     ),
     key_attribute: str = typer.Option(
         ...,
@@ -162,13 +171,19 @@ def transport(  # noqa: PLR0913
             transfer.transfer_reports_to_github(
                 github_token, github_organization, github_repository_prefix, per_key_report
             )
-
-    # Call fetch_data function directly
+     # Call fetch_data function directly from linkage.py
     if save_credentials:
-        fetch_data_function(
-            service_account_file="/path/to/your/service_account.json",
-            spreadsheet_id="YOUR_SPREADSHEET_ID",
+        # Check if service account file exists for linkage
+        service_account_file_path = Path(service_account_file)
+        if not service_account_file_path.exists():
+            raise FileNotFoundError(f"Service account file not found: {service_account_file_path}")
+
+        # Call fetch_data function from linkage.py
+        fetch_data(
+            service_account_file=service_account_file_path.resolve(),
+            spreadsheet_id=spreadsheet_id,
         )
+
 
 def save_credentials_files(creds):
     destination_directory = platformdirs.user_data_dir("cellveyor")
