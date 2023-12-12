@@ -9,7 +9,9 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
-from cellveyor import constants, data, filesystem, report, transfer
+from cellveyor import data, filesystem, report, transfer, linkage  
+from linkage import fetch_data
+
 
 # create a Typer object to support the command-line interface
 cli = typer.Typer(no_args_is_help=True)
@@ -25,9 +27,7 @@ def display_reports(reports_dict: Dict[str, str]) -> None:
         current_report = reports_dict[current_report_key]
         # display the report inside of a rich panel, using
         # a markdown-based formatter for the report's contents
-        console.print(
-            f"{constants.markers.Indent} {Panel(Markdown(current_report), title='Report', expand=False)} {constants.markers.Newline}"
-        )
+        console.print(Panel(Markdown(current_report), title="Report", expand=False))
         console.print()
 
 creds = None
@@ -183,22 +183,3 @@ def transport(  # noqa: PLR0913
             service_account_file=service_account_file_path.resolve(),
             spreadsheet_id=spreadsheet_id,
         )
-
-
-def save_credentials_files(creds):
-    destination_directory = platformdirs.user_data_dir("cellveyor")
-
-    # Save credentials.json
-    credentials_path = destination_directory + "/credentials.json"
-    with open(credentials_path, "w") as credentials_file:
-        credentials_file.write(creds.to_json())
-
-    # Save service account file
-    service_account_path = destination_directory + "/service_account.json"
-    with open(service_account_path, "w") as service_account_file:
-        service_account_file.write(creds._service_account_info)
-
-    typer.echo(f"Credentials files saved to {destination_directory}")
-
-if __name__ == "__main__":
-    cli()
