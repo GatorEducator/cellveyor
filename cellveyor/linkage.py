@@ -50,5 +50,3 @@ def fetch_data(
 
 if __name__ == "__main__":
     typer.run(fetch_data)
-
-
