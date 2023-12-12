@@ -5,20 +5,9 @@ import typer
 
 cli = typer.Typer(no_args_is_help=True)
 
-@cli.command()
 def fetch_data(
-    service_account_file: str = typer.Option(
-        ...,
-        "--service-account-file",
-        "-s",
-        help="Path to the service account JSON file",
-    ),
-    spreadsheet_id: str = typer.Option(
-        ...,
-        "--spreadsheet-id",
-        "-i",
-        help="ID of the Google Spreadsheet",
-    ),
+    service_account_file: str,
+    spreadsheet_id: str,
 ) -> None:
     """Fetch data from a specified Google Spreadsheet."""
     SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -61,4 +50,5 @@ def fetch_data(
 
 if __name__ == "__main__":
     typer.run(fetch_data)
+
 
