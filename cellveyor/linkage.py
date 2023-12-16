@@ -1,13 +1,21 @@
 import pandas as pd
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
-from typing import Dict
+import typer
 
-def fetch_data(
-    service_account_file: str,
-    spreadsheet_id: str,
-) -> Dict[str, pd.DataFrame]:
-    # ...
+cli = typer.Typer(no_args_is_help=True)
+
+def fetch_data(service_account_file, spreadsheet_id):
+    """Fetch data from Google Sheets API."""
+    SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+
+    # Load credentials from the provided service account file
+    creds = service_account.Credentials.from_service_account_file(
+        service_account_file, scopes=SCOPES
+    )
+
+    service = build("sheets", "v4", credentials=creds)
+    sheets = service.spreadsheets()
 
     # Getting list of all sheets in the spreadsheet
     spreadsheet_metadata = sheets.get(spreadsheetId=spreadsheet_id).execute()
@@ -18,11 +26,9 @@ def fetch_data(
 
     # Iterate through each sheet and fetch the data
     for sheet_name in sheet_names:
-        range_ = f"{sheet_name}!A1:S1"  # Adjust the range as needed
-
         result = (
             sheets.values()
-            .get(spreadsheetId=spreadsheet_id, range=range_)
+            .get(spreadsheetId=spreadsheet_id, range=f"{sheet_name}!A1:S1")
             .execute()
         )
 
@@ -33,22 +39,11 @@ def fetch_data(
             df = pd.DataFrame(values[1:], columns=values[0])
             dataframes[sheet_name] = df
 
-    return dataframes
+    # Access the DataFrames as needed
+    for sheet_name, df in dataframes.items():
+        typer.echo(f"Sheet Name: {sheet_name}")
+        typer.echo(df)
+        typer.echo("=" * 50)
 
-# Additional function to generate a report
-def generate_report(dataframe: pd.DataFrame) -> str:
-    if dataframe.empty:
-        return "No data available."
-
-    report = f"Hello @{dataframe['GitHub Username'].iloc[0]}!\n\n"
-    report += "**📔 Here are your summary scores:**\n\n"
-
-    # Iterate through columns to include in the report
-    for column in dataframe.columns:
-        if column != "GitHub Username":
-            report += f"- **{column}**: {dataframe[column].iloc[0]}\n"
-
-    report += "\n**🤝 Here is some additional feedback for you to consider:**\n\n"
-    report += "\n".join(dataframe["Feedback"].tolist())
-
-    return report
+if __name__ == "__main__":
+    typer.run(fetch_data)
