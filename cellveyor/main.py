@@ -2,17 +2,17 @@
 
 from pathlib import Path
 from typing import Dict, List
+from typing import Dict, Any 
 
 import typer
+import pandas as pd
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
-from googleapiclient.discovery import build
 
 
 from cellveyor import data, filesystem, report, transfer, linkage
-import pandas as pd
-from google.oauth2 import service_account
+
 
 
 # create a Typer object to support the command-line interface
@@ -35,7 +35,7 @@ def display_reports(reports_dict: Dict[str, str]) -> None:
 creds = None
 
 @cli.command()
-def transport(  # noqa: PLR0913
+def transport( # noqa: PLR0913
     spreadsheet_directory: Path = typer.Option(
         ...,
         "--spreadsheet-directory",
@@ -97,7 +97,7 @@ def transport(  # noqa: PLR0913
     feedback_file: List[Path] = typer.Option(
         None,
         "--feedback-file",
-        "-f",
+        "-ff",
         help="Feedback file(s) in JSON format",
     ),
     github_token: str = typer.Option(
@@ -122,22 +122,31 @@ def transport(  # noqa: PLR0913
         False,
         help="Transfer a report to GitHub",
     ),
-    update_spreadsheet: bool = typer.Option(
-        False,
-        "--update-spreadsheet",
-        help="Update the Google Sheet with the generated report",
-    ),
 ) -> None:
-    dataframes = None
     """Transport a specified spreadsheet."""
     # determine if the provided directory and file are valid
+    fully_qualified_spreadsheet_file = spreadsheet_directory / spreadsheet_file
+    console.print(f":delivery_truck: Accessing: {fully_qualified_spreadsheet_file}")
+    # access the requested sheet within the spreadsheet
+    sheet_dataframe_dict = data.access_dataframes(fully_qualified_spreadsheet_file)
+    # print the columns of the dataframe
+    # Display information about sheets and their columns
+    for sheet_name, sheet_dataframe in sheet_dataframe_dict.items():
+        print(f"Sheet Name: {sheet_name}")
+        print("Columns in the dataframe:", sheet_dataframe.columns)
+        print(sheet_dataframe)
+        print("=" * 50)
+
+    # access the dictionary of all of the dataframes in the spreadsheet;
+    # note that each sheet in the spreadsheet can be accessed by:
+    # --> name of the sheet: str
+    # --> dataframe of the sheet: pandas dataframe
     if not filesystem.confirm_valid_file_in_directory(
         spreadsheet_file, spreadsheet_directory
     ):
         console.print(":person_shrugging: Unable to access file and/or directory")
     # access all of the sheets inside of the valid spreadsheet file
     fully_qualified_spreadsheet_file = spreadsheet_directory / spreadsheet_file
-    console.print(f":delivery_truck: Accessing: {fully_qualified_spreadsheet_file}")
     # access all of the feedback files and combine them into a single
     # dictionary organized in the following fashion:
     # --> key: label like "header" or "footer" or a label
@@ -150,10 +159,20 @@ def transport(  # noqa: PLR0913
     # note that each sheet in the spreadsheet can be accessed by:
     # --> name of the sheet: str
     # --> dataframe of the sheet: pandas dataframe
-    sheet_dataframe_dict = data.access_dataframes(fully_qualified_spreadsheet_file)
-    # console.print(sheet_dataframe_dict.keys())
+
+    console.print(sheet_dataframe_dict.keys())
     # access the requested sheet within the spreadsheet
-    sheet_dataframe = sheet_dataframe_dict[sheet_name]
+
+    # access the data for:
+    # --> the key attribute
+    # --> the column(s) that match the regular expression
+    try:
+        selected_columns, result_df = data.key_attribute_column_filter(
+            sheet_dataframe, key_attribute, column_regexp, key_value
+        )
+    except KeyError as e:
+        print(f"Error: {e}")
+        return
     # access the data for:
     # --> the key attribute
     # --> the column(s) that match the regular expression
@@ -168,8 +187,6 @@ def transport(  # noqa: PLR0913
         feedback_regexp,
         combined_feedback_dict,
     )
-    # Debug print
-    print(f"Generated report for {sheet_name}:\n{per_key_report}")
     # display the generated reports
     display_reports(per_key_report)
     # if the --transfer flag was enabled then this means
@@ -181,93 +198,23 @@ def transport(  # noqa: PLR0913
             transfer.transfer_reports_to_github(
                 github_token, github_organization, github_repository_prefix, per_key_report
             )
- # Call fetch_data function directly from linkage.py
-    if save_credentials:
-        service_account_file_path = Path(service_account_file)
-        if not service_account_file_path.exists():
-            raise FileNotFoundError(f"Service account file not found: {service_account_file_path}")
-         
-         # Call fetch_data function from linkage.py
+        if save_credentials:
+            service_account_file_path = Path(service_account_file)
+    if not service_account_file_path.exists():
+        raise FileNotFoundError(f"Service account file not found: {service_account_file_path}")
+
+    # Call fetch_data function from linkage.py
+    try:
         dataframes = linkage.fetch_data(
             service_account_file=service_account_file_path.resolve(),
             spreadsheet_id=spreadsheet_id,
         )
-
+    except TypeError:
+        dataframes = None
+ 
     # Access the DataFrames as needed
     if dataframes is not None:
         for sheet_name, df in dataframes.items():
             print(f"Sheet Name: {sheet_name}")
             print(df)
             print("=" * 50)
-
-            # Create a report for each sheet
-            per_key_report = report.create_per_key_report(
-                key_attribute,
-                df,
-                selected_columns,
-                feedback_regexp,
-                combined_feedback_dict,
-            )
-
-            # Debug print
-            print(f"Generated report for {sheet_name}:\n{per_key_report}")
-
-            # Display the generated reports
-            display_reports(per_key_report)
-
-            # If the --update-spreadsheet flag was enabled, update the Google Sheet
-            if update_spreadsheet:
-                # Convert the DataFrame to a dictionary to fit into the Google Sheets API
-                per_key_report_dict = per_key_report.to_dict(orient="records")
-    
-   # If the --update-spreadsheet flag is provided, update the Google Sheet
-    if update_spreadsheet and dataframes is not None:
-        # Assuming per_key_report is a DataFrame
-        # Convert the DataFrame to a dictionary to fit into the Google Sheets API
-        per_key_report_dict = per_key_report.to_dict(orient="records")
-
-        # Load credentials from the provided service account file
-        creds = service_account.Credentials.from_service_account_file(
-            service_account_file_path, scopes=["https://www.googleapis.com/auth/spreadsheets"]
-        )
-
-        # Build the service for Google Sheets API
-        service = build("sheets", "v4", credentials=creds)
-
-        # Prepare the data to be written to the Google Sheet
-        values = [list(per_key_report.columns)] + [list(row.values()) for row in per_key_report_dict]
-
-        # Write data to the Google Sheet
-        service.spreadsheets().values().update(
-            spreadsheetId=spreadsheet_id,
-            range=sheet_name,
-            body={"values": values},
-            valueInputOption="RAW"
-        ).execute()
-
-        console.print("Report updated in Google Sheet!")
-
-
-        # Call fetch_data function from linkage.py
-        linkage.fetch_data(
-            service_account_file=service_account_file_path.resolve(),
-            spreadsheet_id=spreadsheet_id,
-        )
-    # if transfer_report:
-    #     transfer.transfer_reports_to_github(
-    #         github_token, github_organization, github_repository_prefix, per_key_report
-    #         )
-    #  # Call fetch_data function directly from linkage.py
-    # if save_credentials:
-    #     # Check if service account file exists for linkage
-    #     service_account_file_path = Path(service_account_file)
-    #     if not service_account_file_path.exists():
-    #         raise FileNotFoundError(f"Service account file not found: {service_account_file_path}")
-
-    #     # Call fetch_data function from linkage.py
-    #     linkage.fetch_data(
-    #         service_account_file=service_account_file_path.resolve(),
-    #         spreadsheet_id=spreadsheet_id,
-    #     )
-
-
