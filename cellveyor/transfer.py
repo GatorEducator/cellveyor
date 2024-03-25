@@ -43,7 +43,9 @@ DETAILS = "Error:"
 
 
 def create_fully_qualified_github_repository(
-    github_organization: str, github_repository_prefix: str, github_username: str
+    github_organization: str,
+    github_repository_prefix: str,
+    github_username: str,
 ) -> str:
     """Create a fully qualified GitHub repository name using provided naming parts."""
     # create fully qualified name of a GitHub repository:
@@ -89,10 +91,16 @@ def transfer_reports_to_github(
             # the current key is the name of the GitHub user
             github_username = github_report_key
             # extract the contents of the report to upload to the pull request comment
-            current_github_report_contents = github_reports_dict[github_username]
+            current_github_report_contents = github_reports_dict[
+                github_username
+            ]
             # create the fully qualified name of the GitHub repository
-            current_github_repository = create_fully_qualified_github_repository(
-                github_organization, github_repository_prefix, github_username
+            current_github_repository = (
+                create_fully_qualified_github_repository(
+                    github_organization,
+                    github_repository_prefix,
+                    github_username,
+                )
             )
             # transfer this specific report to the pull request in the GitHub repository
             # note that this may fail if the repository does not exist or there is some
@@ -121,7 +129,9 @@ def transfer_reports_to_github(
                 continue
 
 
-def transfer_report_to_github(github_token: str, repository: str, report: str) -> None:
+def transfer_report_to_github(
+    github_token: str, repository: str, report: str
+) -> None:
     """Transfer a report to a pull request in a GitHub repository."""
     # authorize the conveyor app to access GitHub through
     # the use of the provided personal access token
