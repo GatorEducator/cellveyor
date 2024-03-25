@@ -58,7 +58,9 @@ def read_feedback_files(feedback_files_list: List[Path]) -> Dict[str, str]:
             # that contains within it the contents of the YAML file
             feedback_file_contents = feedback_file_path.read_text()
             # convert the string that encodes a YAML file to a dictionary
-            feedback_file_contents_dict = yaml.safe_load(feedback_file_contents)
+            feedback_file_contents_dict = yaml.safe_load(
+                feedback_file_contents
+            )
             # add the dictionary to the overall list of feedback dictionaries
             feedback_dict_list.append(feedback_file_contents_dict)
     # create an empty dictionary and then use it to store the
