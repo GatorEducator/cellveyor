@@ -42,7 +42,9 @@ def test_invalid_file() -> None:
 
 @given(directory=strategies.builds(pathlib.Path))
 @pytest.mark.fuzz
-def test_fuzz_confirm_valid_directory_using_builds(directory: pathlib.Path) -> None:
+def test_fuzz_confirm_valid_directory_using_builds(
+    directory: pathlib.Path,
+) -> None:
     """Confirm that the function does not crash."""
     filesystem.confirm_valid_directory(directory=directory)
 
