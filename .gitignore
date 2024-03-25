@@ -372,3 +372,6 @@ coverage.json
 
 # credentials json file report
 credentials.json
+
+# poetry.toml file
+poetry.toml
