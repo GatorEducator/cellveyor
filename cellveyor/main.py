@@ -24,11 +24,16 @@ def display_reports(reports_dict: Dict[str, str]) -> None:
         # extract the report for the current key
         current_report = reports_dict[current_report_key]
         # display the report inside of a rich panel, using
-        # a markdown-based formatter for the report's contents
+        # a markdown-based formatter for the report's contents;
+        # note that use of console.print must occur in two
+        # stages when displaying markdown-based content in a Panel
+        markdown_current_report = Markdown(current_report)
+        console.print(f"{constants.markers.Indent}")
         console.print(
-            f"{constants.markers.Indent} {Panel(Markdown(current_report), title='Report', expand=False)} {constants.markers.Newline}"
+            Panel(
+                markdown_current_report, title=current_report_key, expand=False
+            )
         )
-        console.print()
 
 
 @cli.command()
@@ -109,10 +114,14 @@ def transport(  # noqa: PLR0913
     if not filesystem.confirm_valid_file_in_directory(
         spreadsheet_file, spreadsheet_directory
     ):
-        console.print(":person_shrugging: Unable to access file and/or directory")
+        console.print(
+            ":person_shrugging: Unable to access file and/or directory"
+        )
     # access all of the sheets inside of the valid spreadsheet file
     fully_qualified_spreadsheet_file = spreadsheet_directory / spreadsheet_file
-    console.print(f":delivery_truck: Accessing: {fully_qualified_spreadsheet_file}")
+    console.print(
+        f":delivery_truck: Accessing: {fully_qualified_spreadsheet_file}"
+    )
     # access all of the feedback files and combine them into a single
     # dictionary organized in the following fashion:
     # --> key: label like "header" or "footer" or a label
@@ -125,7 +134,9 @@ def transport(  # noqa: PLR0913
     # note that each sheet in the spreadsheet can be accessed by:
     # --> name of the sheet: str
     # --> dataframe of the sheet: pandas dataframe
-    sheet_dataframe_dict = data.access_dataframes(fully_qualified_spreadsheet_file)
+    sheet_dataframe_dict = data.access_dataframes(
+        fully_qualified_spreadsheet_file
+    )
     # console.print(sheet_dataframe_dict.keys())
     # access the requested sheet within the spreadsheet
     sheet_dataframe = sheet_dataframe_dict[sheet_name]
@@ -150,5 +161,8 @@ def transport(  # noqa: PLR0913
     # as a comment inside of the standard pull request
     if transfer_report:
         transfer.transfer_reports_to_github(
-            github_token, github_organization, github_repository_prefix, per_key_report
+            github_token,
+            github_organization,
+            github_repository_prefix,
+            per_key_report,
         )
