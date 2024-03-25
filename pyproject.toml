@@ -62,15 +62,24 @@ ensure_newline_before_comments = true
 line_length = 88
 
 [tool.taskipy.variables]
+project = "cellveyor"
+tests = "tests"
+check-command = { var = "ruff check {project} {tests}", recursive = true }
+coverage-test-command = "pytest -s --cov-context=test --cov-fail-under=90 --cov-report term-missing --cov-report json --cov --cov-branch"
+coverage-test-command-silent = "pytest -x --show-capture=no --cov-report term-missing --cov-report json --cov --cov-branch"
+fixformat-command = { var = "ruff format {project} {tests}", recursive = true }
+format-command = { var = "ruff format --check {project} {tests}", recursive = true }
 developer-test-command = "pytest -x -s"
 developer-test-silent-command = "pytest -x --show-capture=no"
 
 [tool.taskipy.tasks]
-all = "task black && task mypy && task ruff && task test"
-lint = "task black && task mypy && task ruff"
-black = { cmd = "black cellveyor tests --check", help = "Run the black checks for source code format" }
-fiximports = { cmd = "isort cellveyor tests", help = "Run isort to fix source code imports" }
-fixformat = { cmd = "black cellveyor tests", help = "Run the black checks for source code format" }
+all = "task format && task lint && task test && task coverage"
+lint = "task format && task mypy && task symbex && task markdownlint"
+check = { cmd = "{check-command}", help = "Run the ruff linting checks", use_vars = true }
+coverage = { cmd = "{coverage-test-command}", help = "Run test coverage monitoring", use_vars = true }
+coverage-silent = { cmd = "{coverage-test-command-silent}", help = "Run test coverage monitoring", use_vars = true }
+format = { cmd = "{format-command}", help = "Run the ruff formatter on source code", use_vars = true }
+format-fix = { cmd = "{fixformat-command}", help = "Run the ruff formatter to fix source code", use_vars = true}
 mypy = { cmd = "poetry run mypy cellveyor", help = "Run the mypy type checker for potential type errors" }
 ruff = { cmd = "poetry run ruff check cellveyor tests", help = "Run the ruff checks using configuration in pyproject.toml" }
 test = { cmd = "pytest -x -s -vv -n auto", help = "Run the pytest test suite using order randomization and test distribution" }
