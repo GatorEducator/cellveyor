@@ -13,7 +13,9 @@ def access_dataframes(spreadsheet_file: Path) -> Dict[str, pandas.DataFrame]:
     # read all of the dataframes from the provided spreadsheet file;
     # this will return a dictionary where the key is a string that
     # gives the name of a specific sheet and then the value is the dataframe
-    name_to_dataframe_dict = pandas.read_excel(spreadsheet_file, sheet_name=None)
+    name_to_dataframe_dict = pandas.read_excel(
+        spreadsheet_file, sheet_name=None
+    )
     return name_to_dataframe_dict
 
 
@@ -32,14 +34,14 @@ def key_attribute_column_filter(
     # those columns that matched the regular expression
     result_df = sheet_dataframe[
         [key_attribute_name] + list(selected_columns.columns)  # noqa: RUF005
-    ].dropna(
-        how=ALL
-    )  # type: ignore
+    ].dropna(how=ALL)  # type: ignore
     # filter down further for the specific value of the key attribute;
     # this is particularly useful when extracting and reporting data
     # for a specific row inside of the matching dataframe
     if key_attribute_value:
-        result_df = result_df[result_df[key_attribute_name] == key_attribute_value]
+        result_df = result_df[
+            result_df[key_attribute_name] == key_attribute_value
+        ]
     # for both of the two previous steps, make sure to drop any rows that contain NA values
     # return the columns that were selected and then the resulting dataframe
     return (selected_columns, result_df)  # type: ignore
