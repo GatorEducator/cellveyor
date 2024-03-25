@@ -92,11 +92,13 @@ def create_per_key_report(
         if key_attribute_value == NAN:
             continue
         # create a main label for the entire markdown-based report
-        current_report = (
-            f"**{GREETING_LABEL}{SPACE}@{key_attribute_value}!**{NEWLINE}{NEWLINE}"
+        current_report = f"**{GREETING_LABEL}{SPACE}@{key_attribute_value}!**{NEWLINE}{NEWLINE}"
+        current_report = add_feedback_if_exists(
+            current_report, feedback_dict, HEADER
         )
-        current_report = add_feedback_if_exists(current_report, feedback_dict, HEADER)
-        current_report = current_report + f"**{SUMMARY_LABEL}**{NEWLINE}{NEWLINE}"
+        current_report = (
+            current_report + f"**{SUMMARY_LABEL}**{NEWLINE}{NEWLINE}"
+        )
         # iterate through all of the extracted columns and add them to
         # the report in the following fashion:
         # - Name of the Column: Value of the Column
@@ -130,7 +132,8 @@ def create_per_key_report(
         # add the footer to the feedback report, making sure to add newlines that
         # will provide adequate separation from the potential feedback list
         current_report = (
-            current_report + f"{NEWLINE}{NEWLINE}{feedback_dict[FOOTER]}{NEWLINE}"
+            current_report
+            + f"{NEWLINE}{NEWLINE}{feedback_dict[FOOTER]}{NEWLINE}"
         )
         # now that creation of the current_report is finished, store it
         # inside of the dictionary of the markdown_reports and move to the next one
