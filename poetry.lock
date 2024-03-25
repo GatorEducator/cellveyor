@@ -1127,6 +1127,23 @@ files = [
 ]
 
 [[package]]
+name = "symbex"
+version = "1.4"
+description = "Find the Python code for specified symbols"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "symbex-1.4-py3-none-any.whl", hash = "sha256:be5b64ee094b803ccfbfa903c1b1e3a004d6575bd8ddaaa83c7c0ea7bdf613e3"},
+    {file = "symbex-1.4.tar.gz", hash = "sha256:f786d5d1d9ef0e5b0856ebf54cc12f7c42a63ea073e274f88b6024cf50490164"},
+]
+
+[package.dependencies]
+click = "*"
+
+[package.extras]
+test = ["PyYAML", "cogapp", "pytest", "pytest-icdiff", "ruff"]
+
+[[package]]
 name = "taskipy"
 version = "1.12.2"
 description = "tasks runner for python projects"
@@ -1321,4 +1338,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "ee068e40676600f10dbedc25ab6a5ec987723448f926f0b5662315d23e682620"
+content-hash = "a4ab24c9ff0ee5323e658e435e6b92d2f506598de9b795db31593aea5465944e"
