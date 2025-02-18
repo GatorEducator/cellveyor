@@ -38,7 +38,7 @@ members included in a locally created google spreadsheet. By running the command
 created, this will quickly and automatically send out these reports in a very timely
 and efficient fashion.
 
-## 😂 Definitons
+## 😂 Definitions
 
 - Cellveyor is a tool that automatically produces a report based output by
 analyzing a Google sheet
