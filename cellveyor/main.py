@@ -47,13 +47,13 @@ def transport(  # noqa: PLR0913
     spreadsheet_file: Path = typer.Option(
         ...,
         "--spreadsheet-file",
-        "-f",
+        "-s",
         help="Spreadsheet file in the specified directory.",
     ),
     sheet_name: str = typer.Option(
         ...,
         "--sheet-name",
-        "-s",
+        "-n",
         help="Name of specific sheet in spreadsheet file",
     ),
     key_attribute: str = typer.Option(
@@ -71,7 +71,7 @@ def transport(  # noqa: PLR0913
     feedback_regexp: str = typer.Option(
         ...,
         "--feedback-regexp",
-        "-f",
+        "-r",
         help="Regular expression for matching feedback columns in specific sheet",
     ),
     key_value: str = typer.Option(
