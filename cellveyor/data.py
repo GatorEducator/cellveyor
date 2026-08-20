@@ -28,10 +28,7 @@ def key_attribute_column_filter(
     """Extract a region of a dataframe defined by a key attribute and columns that match a regular expression."""
     # validate that the key attribute column exists
     if key_attribute_name not in sheet_dataframe.columns:
-        available = ", ".join(map(str, sheet_dataframe.columns.tolist()))
-        raise ValueError(
-            f"Key attribute '{key_attribute_name}' not found. Available columns: {available}"
-        )
+        raise ValueError(f"Key attribute '{key_attribute_name}' not found")
     # use the provided regular expression to extract from the data frame
     # only those columns that have a name that matches the regular expression
     try:

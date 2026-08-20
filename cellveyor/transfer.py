@@ -73,22 +73,33 @@ def transfer_reports_to_github(
     console = Console()
     # validate required GitHub arguments
     if not github_token:
+        console.print()
         console.print(
-            "[red]:person_shrugging: GitHub token is missing (--github-token)[/red]"
+            ":person_shrugging: GitHub token is missing (--github-token)",
+            style="red",
         )
+        console.print()
         return
     if not github_organization:
+        console.print()
         console.print(
-            "[red]:person_shrugging: GitHub organization is missing (--github-organization)[/red]"
+            ":person_shrugging: GitHub organization is missing (--github-organization)",
+            style="red",
         )
+        console.print()
         return
     if not github_repository_prefix:
+        console.print()
         console.print(
-            "[red]:person_shrugging: GitHub repository prefix is missing (--github-repository-prefix)[/red]"
+            ":person_shrugging: GitHub repository prefix is missing (--github-repository-prefix)",
+            style="red",
         )
+        console.print()
         return
     if not github_reports_dict:
-        console.print("[yellow]:warning: No reports to transfer[/yellow]")
+        console.print()
+        console.print(":warning: No reports to transfer", style="yellow")
+        console.print()
         return
     # extract the keys for the different repositories on
     # GitHub that will receive a report during this transfer

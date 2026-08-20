@@ -17,6 +17,20 @@ cli = typer.Typer(no_args_is_help=True)
 console = Console()
 
 
+def _print_dash_list(title: str, items: List[str], color: str = "red") -> None:
+    """Print a title followed by a dash-prefixed list with spacing."""
+    console.print(f"  {title}:", style=color)
+    console.print()
+    for item in items:
+        # sanitize items: replace newlines and collapse whitespace to avoid broken dash lists
+        clean_item = str(item).replace("\n", " ").replace("\r", " ")
+        # collapse multiple spaces
+        clean_item = " ".join(clean_item.split())
+        # use style instead of markup to avoid interpreting brackets in item names
+        console.print(f"    - {clean_item}", style=color)
+    console.print()
+
+
 def display_reports(reports_dict: Dict[str, str]) -> None:
     """Display all of the reports in the reports dictionary."""
     # iterate through all of the keys
@@ -114,31 +128,47 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915
     if not filesystem.confirm_valid_file_in_directory(
         spreadsheet_file, spreadsheet_directory
     ):
+        console.print()
         console.print(
-            "[red]:person_shrugging: Unable to access file and/or directory[/red]"
+            ":person_shrugging: Unable to access file and/or directory",
+            style="red",
         )
+        console.print()
         # provide more specific diagnostics
         if not filesystem.confirm_valid_directory(spreadsheet_directory):
-            console.print(
-                f"[red]  Directory not found: {spreadsheet_directory}[/red]"
-            )
+            console.print("  Directory not found:", style="red")
+            console.print()
+            console.print(f"    - {spreadsheet_directory}", style="red")
+            console.print()
         else:
+            console.print("  File not found in directory:", style="red")
+            console.print()
             console.print(
-                f"[red]  File not found in directory: {spreadsheet_directory / spreadsheet_file}[/red]"
+                f"    - {spreadsheet_directory / spreadsheet_file}",
+                style="red",
             )
+            console.print()
         raise typer.Exit(code=1)
     # access all of the sheets inside of the valid spreadsheet file
     fully_qualified_spreadsheet_file = spreadsheet_directory / spreadsheet_file
     console.print(
         f":delivery_truck: Accessing: {fully_qualified_spreadsheet_file}"
     )
+    console.print()
     # warn about any feedback files that do not exist
     if feedback_file is not None:
-        for fb_path in feedback_file:
-            if not filesystem.confirm_valid_file(fb_path):
-                console.print(
-                    f"[yellow]:warning: Feedback file not found, skipping: {fb_path}[/yellow]"
-                )
+        missing_feedback = [
+            fb for fb in feedback_file if not filesystem.confirm_valid_file(fb)
+        ]
+        if missing_feedback:
+            console.print(
+                ":warning: Feedback file(s) not found, skipping:",
+                style="yellow",
+            )
+            console.print()
+            for fb_path in missing_feedback:
+                console.print(f"    - {fb_path}", style="yellow")
+            console.print()
     # access all of the feedback files and combine them into a single
     # dictionary organized in the following fashion:
     # --> key: label like "header" or "footer" or a label
@@ -157,21 +187,29 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915
         )
     except FileNotFoundError:
         console.print(
-            f"[red]:person_shrugging: Spreadsheet file not found: {fully_qualified_spreadsheet_file}[/red]"
+            f":person_shrugging: Spreadsheet file not found: {fully_qualified_spreadsheet_file}",
+            style="red",
         )
+        console.print()
         raise typer.Exit(code=1)
     except Exception as exc:
         console.print(
-            f"[red]:person_shrugging: Failed to read spreadsheet: {exc}[/red]"
+            f":person_shrugging: Failed to read spreadsheet: {exc}",
+            style="red",
         )
+        console.print()
         raise typer.Exit(code=1)
     # validate that the requested sheet exists
     if sheet_name not in sheet_dataframe_dict:
-        available_sheets = ", ".join(sheet_dataframe_dict.keys())
         console.print(
-            f"[red]:person_shrugging: Sheet '{sheet_name}' not found[/red]"
+            f":person_shrugging: Sheet '{sheet_name}' not found", style="red"
         )
-        console.print(f"[red]  Available sheets: {available_sheets}[/red]")
+        console.print()
+        _print_dash_list(
+            "Available sheets",
+            list(sheet_dataframe_dict.keys()),
+            color="red",
+        )
         raise typer.Exit(code=1)
     # console.print(sheet_dataframe_dict.keys())
     # access the requested sheet within the spreadsheet
@@ -184,35 +222,47 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915
             sheet_dataframe, key_attribute, column_regexp, key_value
         )
     except ValueError as exc:
-        console.print(f"[red]:person_shrugging: {exc}[/red]")
+        console.print(f":person_shrugging: {exc}", style="red")
+        console.print()
         # also show available columns for key attribute errors
         if "Key attribute" in str(exc):
-            available_cols = ", ".join(
-                map(str, sheet_dataframe.columns.tolist())
+            _print_dash_list(
+                "Available columns",
+                list(map(str, sheet_dataframe.columns.tolist())),
+                color="red",
             )
             console.print(
-                "[red]  Hint: check --key-attribute and --column-regexp[/red]"
+                "  Hint: check --key-attribute and --column-regexp",
+                style="red",
             )
+            console.print()
         raise typer.Exit(code=1)
     except Exception as exc:
         console.print(
-            f"[red]:person_shrugging: Failed to filter columns: {exc}[/red]"
+            f":person_shrugging: Failed to filter columns: {exc}",
+            style="red",
         )
+        console.print()
         raise typer.Exit(code=1)
     # warn if column regexp matched no columns
     if selected_columns.empty or len(selected_columns.columns) == 0:
         console.print(
-            f"[yellow]:warning: No columns matched --column-regexp '{column_regexp}'[/yellow]"
+            f":warning: No columns matched --column-regexp '{column_regexp}'",
+            style="yellow",
         )
-        available_cols = ", ".join(map(str, sheet_dataframe.columns.tolist()))
-        console.print(
-            f"[yellow]  Available columns: {available_cols}[/yellow]"
+        console.print()
+        _print_dash_list(
+            "Available columns",
+            list(map(str, sheet_dataframe.columns.tolist())),
+            color="yellow",
         )
     # warn if result has no rows
     if result_df.empty:
         console.print(
-            "[yellow]:warning: No rows found after filtering — check --key-attribute and --column-regexp[/yellow]"
+            ":warning: No rows found after filtering — check --key-attribute and --column-regexp",
+            style="yellow",
         )
+        console.print()
     # create a unique message for each row in the dataframe
     try:
         per_key_report = report.create_per_key_report(
@@ -224,13 +274,15 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915
         )
     except Exception as exc:
         console.print(
-            f"[red]:person_shrugging: Failed to create reports: {exc}[/red]"
+            f":person_shrugging: Failed to create reports: {exc}", style="red"
         )
+        console.print()
         raise typer.Exit(code=1)
     if not per_key_report:
         console.print(
-            "[yellow]:warning: No reports generated (no matching rows)[/yellow]"
+            ":warning: No reports generated (no matching rows)", style="yellow"
         )
+        console.print()
     # display the generated reports
     display_reports(per_key_report)
     # if the --transfer flag was enabled then this means
@@ -247,11 +299,18 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915
             missing_github_args.append("--github-repository-prefix")
         if missing_github_args:
             console.print(
-                f"[red]:person_shrugging: Missing required GitHub arguments for --transfer-report: {', '.join(missing_github_args)}[/red]"
+                ":person_shrugging: Missing required GitHub arguments for --transfer-report:",
+                style="red",
+            )
+            console.print()
+            _print_dash_list(
+                "Missing options", missing_github_args, color="red"
             )
             console.print(
-                "[red]  Hint: provide all GitHub options or omit --transfer-report[/red]"
+                "  Hint: provide all GitHub options or omit --transfer-report",
+                style="red",
             )
+            console.print()
             raise typer.Exit(code=1)
         try:
             transfer.transfer_reports_to_github(
@@ -262,6 +321,8 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915
             )
         except Exception as exc:
             console.print(
-                f"[red]:person_shrugging: GitHub transfer failed: {exc}[/red]"
+                f":person_shrugging: GitHub transfer failed: {exc}",
+                style="red",
             )
+            console.print()
             raise typer.Exit(code=1)
