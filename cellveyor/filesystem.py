@@ -46,23 +46,39 @@ def confirm_valid_file_in_directory(
     return False
 
 
-def read_feedback_files(feedback_files_list: List[Path]) -> Dict[str, str]:
+def read_feedback_files(
+    feedback_files_list: List[Path] | None,
+) -> Dict[str, str]:
     """Read all of the feedback files and return them in a combined dictionary."""
+    # handle the case where no feedback files were provided
+    if feedback_files_list is None:
+        return {}
     feedback_dict_list: List[Dict[str, str]] = []
     # iterate through all of the provided feedback files
     for feedback_file_path in feedback_files_list:
         # confirm that the file is valid; if it is valid
         # then its contents will be read and converted to a dictionary
         if confirm_valid_file(feedback_file_path):
-            # read the contents of the file, which are a string
-            # that contains within it the contents of the YAML file
-            feedback_file_contents = feedback_file_path.read_text()
-            # convert the string that encodes a YAML file to a dictionary
-            feedback_file_contents_dict = yaml.safe_load(
-                feedback_file_contents
-            )
-            # add the dictionary to the overall list of feedback dictionaries
-            feedback_dict_list.append(feedback_file_contents_dict)
+            try:
+                # read the contents of the file, which are a string
+                # that contains within it the contents of the YAML file
+                feedback_file_contents = feedback_file_path.read_text()
+                # convert the string that encodes a YAML file to a dictionary
+                feedback_file_contents_dict = yaml.safe_load(
+                    feedback_file_contents
+                )
+                # yaml.safe_load can return None for empty files; skip those
+                if feedback_file_contents_dict is None:
+                    continue
+                # ensure the loaded content is a dict before adding
+                if not isinstance(feedback_file_contents_dict, dict):
+                    continue
+                # add the dictionary to the overall list of feedback dictionaries
+                feedback_dict_list.append(feedback_file_contents_dict)
+            except (OSError, yaml.YAMLError):
+                # silently skip unreadable or malformed feedback files;
+                # caller can warn if desired
+                continue
     # create an empty dictionary and then use it to store the
     # unified contents of all of the other dictionaries coming from
     # the previously input YAML files that contains the feedback pairs

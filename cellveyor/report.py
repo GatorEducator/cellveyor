@@ -34,6 +34,9 @@ def add_feedback_if_exists(
     if feedback_key in feedback_dict:
         # extract the specific feedback from the dictionary
         feedback = feedback_dict[feedback_key]
+        # handle non-string feedback values (e.g., list/dict from YAML) gracefully
+        if not isinstance(feedback, str):
+            feedback = str(feedback)
         # if the function was not asked to create a list, then
         # add the feedback and then a newline, a space, and then
         # the message; since lists do not need newlines after them,
@@ -43,7 +46,8 @@ def add_feedback_if_exists(
         # if the feedback should appear in a list, then make sure
         # that it is prefaced with a dash and then a space
         else:
-            final_report = final_report + f"{DASH}{SPACE}{feedback}"
+            # ensure each list entry ends with a newline
+            final_report = final_report + f"{DASH}{SPACE}{feedback}{NEWLINE}"
     # return the potentially improved feedback report
     return final_report
 
@@ -111,19 +115,35 @@ def create_per_key_report(
                 + f"{DASH}{SPACE}**{column_name}**:{SPACE}{column_value}{NEWLINE}"
             )
         # extract the specific row of feedback from the selected feedback columns
-        feedback_comma_list = str(selected_feedback_columns.iloc[index, 0])  # type: ignore
-        # create a, potentially empty, list of feedback
-        feedback_list = create_feedback_list(feedback_comma_list)
+        # handle case where feedback_regexp matches no columns or index out of range
+        if (
+            selected_feedback_columns.empty
+            or selected_feedback_columns.shape[1] == 0
+        ):
+            feedback_list: List[str] = []
+        else:
+            try:
+                feedback_comma_list = str(
+                    selected_feedback_columns.iloc[index, 0]  # type: ignore
+                )
+            except (IndexError, KeyError):
+                feedback_comma_list = ""
+            # create a, potentially empty, list of feedback
+            feedback_list = create_feedback_list(feedback_comma_list)
         # if there is feedback, then add each of the feedback points
         # in a list and then add the content that belongs in the footer
-        if feedback_list:
+        # only show feedback section if at least one key exists in the dict
+        effective_feedback_keys = [
+            k for k in feedback_list if k in feedback_dict
+        ]
+        if effective_feedback_keys:
             current_report = (
                 current_report
                 + f"{NEWLINE}{NEWLINE}**{FEEDBACK_LABEL}**{NEWLINE}{NEWLINE}"
             )
             # make an entry for each of the types of feedback, ensuring that
             # each feedback is an entry inside of a list
-            for feedback_key in feedback_list:
+            for feedback_key in effective_feedback_keys:
                 # only add feedback in a list-based fashion when there is
                 # a feedback value for the key inside of the feedback dictionary
                 current_report = add_feedback_if_exists(
@@ -131,10 +151,14 @@ def create_per_key_report(
                 )
         # add the footer to the feedback report, making sure to add newlines that
         # will provide adequate separation from the potential feedback list
-        current_report = (
-            current_report
-            + f"{NEWLINE}{NEWLINE}{feedback_dict[FOOTER]}{NEWLINE}"
-        )
+        footer_content = feedback_dict.get(FOOTER, "")
+        # handle case where footer value is not a string (e.g., list from YAML)
+        if isinstance(footer_content, list):
+            footer_content = str(footer_content)
+        if footer_content:
+            current_report = (
+                current_report + f"{NEWLINE}{NEWLINE}{footer_content}{NEWLINE}"
+            )
         # now that creation of the current_report is finished, store it
         # inside of the dictionary of the markdown_reports and move to the next one
         markdown_reports[key_attribute_value] = current_report

@@ -3,6 +3,7 @@
 from typing import Dict
 
 from github import Auth, Github, GithubException
+from rich.console import Console
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -69,6 +70,26 @@ def transfer_reports_to_github(
     github_reports_dict: Dict[str, str],
 ) -> None:
     """Transfer all reports to GitHub."""
+    console = Console()
+    # validate required GitHub arguments
+    if not github_token:
+        console.print(
+            "[red]:person_shrugging: GitHub token is missing (--github-token)[/red]"
+        )
+        return
+    if not github_organization:
+        console.print(
+            "[red]:person_shrugging: GitHub organization is missing (--github-organization)[/red]"
+        )
+        return
+    if not github_repository_prefix:
+        console.print(
+            "[red]:person_shrugging: GitHub repository prefix is missing (--github-repository-prefix)[/red]"
+        )
+        return
+    if not github_reports_dict:
+        console.print("[yellow]:warning: No reports to transfer[/yellow]")
+        return
     # extract the keys for the different repositories on
     # GitHub that will receive a report during this transfer
     github_report_keys = github_reports_dict.keys()
@@ -127,25 +148,49 @@ def transfer_reports_to_github(
                     f"{INDENT}[red]{DETAILS}[/red]{SPACE}{github_exception}"
                 )
                 continue
+            except Exception as exc:
+                # catch broader errors like auth failures, network errors, bad repo names
+                progress.console.print(
+                    f"{XMARK}{SPACE}[red]{current_github_repository}"
+                )
+                progress.console.print(
+                    f"{INDENT}[red]{DETAILS}[/red]{SPACE}{exc}"
+                )
+                continue
 
 
 def transfer_report_to_github(
     github_token: str, repository: str, report: str
 ) -> None:
     """Transfer a report to a pull request in a GitHub repository."""
+    # validate inputs before attempting GitHub API calls
+    if not github_token or not isinstance(github_token, str):
+        raise ValueError("GitHub token is missing or invalid")
+    if not repository or not isinstance(repository, str):
+        raise ValueError("GitHub repository name is missing or invalid")
+    if FORWARD_SLASH not in repository or DASH not in repository:
+        # basic sanity check; let PyGithub raise more detailed errors
+        pass
     # authorize the conveyor app to access GitHub through
     # the use of the provided personal access token
-    authorization = Auth.Token(github_token)
-    github = Github(auth=authorization)
-    # use the fully qualified name of the GitHub repository to
-    # create a connection to it
-    github_repository = github.get_repo(repository)
-    # access the default pull request according to the
-    # convention established by GitHub Classroom
-    pull_request = github_repository.get_pull(PULL_REQUEST_ID)
-    # create an issue comment in this specific pull request;
-    # note that this is a stand-alone comment for a pull request
-    # and not specifically connected to the review of the pull
-    # request itself; this is the reason why it is actually
-    # using the issue GitHub API to create the comment
-    pull_request.create_issue_comment(report)
+    try:
+        authorization = Auth.Token(github_token)
+        github = Github(auth=authorization)
+        # use the fully qualified name of the GitHub repository to
+        # create a connection to it
+        github_repository = github.get_repo(repository)
+        # access the default pull request according to the
+        # convention established by GitHub Classroom
+        pull_request = github_repository.get_pull(PULL_REQUEST_ID)
+        # create an issue comment in this specific pull request;
+        # note that this is a stand-alone comment for a pull request
+        # and not specifically connected to the review of the pull
+        # request itself; this is the reason why it is actually
+        # using the issue GitHub API to create the comment
+        pull_request.create_issue_comment(report)
+    except (GithubException, ValueError):
+        # re-raise known GitHub/auth errors for caller to handle
+        raise
+    except Exception as exc:
+        # wrap unexpected errors as GithubException-like for uniform handling
+        raise GithubException(500, str(exc), None) from exc

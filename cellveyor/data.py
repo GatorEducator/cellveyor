@@ -26,10 +26,20 @@ def key_attribute_column_filter(
     key_attribute_value: str = "",
 ) -> Tuple[pandas.DataFrame, pandas.DataFrame]:
     """Extract a region of a dataframe defined by a key attribute and columns that match a regular expression."""
+    # validate that the key attribute column exists
+    if key_attribute_name not in sheet_dataframe.columns:
+        available = ", ".join(map(str, sheet_dataframe.columns.tolist()))
+        raise ValueError(
+            f"Key attribute '{key_attribute_name}' not found. Available columns: {available}"
+        )
     # use the provided regular expression to extract from the data frame
     # only those columns that have a name that matches the regular expression
-    # selected_columns = sheet_dataframe.filter(regex=column_regexp).dropna()
-    selected_columns = sheet_dataframe.filter(regex=column_regexp)
+    try:
+        selected_columns = sheet_dataframe.filter(regex=column_regexp)
+    except Exception as exc:
+        raise ValueError(
+            f"Invalid column regular expression '{column_regexp}': {exc}"
+        ) from exc
     # extract the attribute that has the key name and also select all of
     # those columns that matched the regular expression
     result_df = sheet_dataframe[
