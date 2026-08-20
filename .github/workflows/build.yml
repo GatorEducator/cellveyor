@@ -57,34 +57,29 @@ jobs:
           uses: actions/setup-python@v4
           with:
             python-version: ${{ matrix.python-version }}
-        # Install pip
-        - name: Install Pip
+        # Install uv
+        - name: Install uv
           if: always()
-          run: |
-            python -m pip install --upgrade pip
-        # Install poetry
-        - name: Install Poetry
-          if: always()
-          uses: abatilo/actions-poetry@v2.0.0
+          uses: astral-sh/setup-uv@v5
           with:
-            poetry-version: 1.4.0
+            enable-cache: true
         # Install dependencies
         - name: Install dependencies
           if: always()
           run: |
-            poetry install
+            uv sync --group dev
         # Run the linters
         - name: Run Linters
           if: always()
           run: |
-            poetry run task lint
+            uv run task lint
         # Run the program
         - name: Run program
           if: always()
           run: |
-            poetry run cellveyor --spreadsheet-directory $PWD/spreadsheets/ --spreadsheet-file $PWD/spreadsheets/fake_spreadsheet.xlsx/ --sheet-name Main --key-attribute "Student GitHub" --key-value "gkapfham" --column-regexp '^(Summary Grade|Final Grade) .*$' --feedback-regexp "Summary Grade 1 - Feedback" --feedback-file $PWD/spreadsheets/feedback.yml/ 
+            uv run cellveyor --spreadsheet-directory $PWD/spreadsheets/ --spreadsheet-file $PWD/spreadsheets/fake_spreadsheet.xlsx/ --sheet-name Main --key-attribute "Student GitHub" --key-value "gkapfham" --column-regexp '^(Summary Grade|Final Grade) .*$' --feedback-regexp "Summary Grade 1 - Feedback" --feedback-file $PWD/spreadsheets/feedback.yml/ 
         # Run the tests
         - name: Run Tests
           if: always()
           run: |
-            poetry run task test
+            uv run task test
