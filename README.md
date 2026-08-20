@@ -11,7 +11,7 @@
 ## Example Command
 
 ```
-poetry run cellveyor --spreadsheet-directory \
+uv run cellveyor --spreadsheet-directory \
 /home/gkapfham/working/data/gradebook/2023 --spreadsheet-file
 CMPSC-203-Fall-2023-Gradebook.xlsx \
 --sheet-name Main \
@@ -68,4 +68,4 @@ Follow these steps to install the Cellveyor program:
 1. Copy the ssh key of the repo
 2. ```Git clone``` the repository onto your personal computer
     - ```git clone (ssh key)```
-3. Type ```poetry run cellveyor --help``` to learn how to use the tool
+3. Type ```uv run cellveyor --help``` to learn how to use the tool
