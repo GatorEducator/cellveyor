@@ -34,9 +34,7 @@ def _print_dash_list(title: str, items: List[str], color: str = "red") -> None:
 def display_reports(reports_dict: Dict[str, str]) -> None:
     """Display all of the reports in the reports dictionary."""
     # iterate through all of the keys
-    for current_report_key in reports_dict.keys():
-        # extract the report for the current key
-        current_report = reports_dict[current_report_key]
+    for current_report_key, current_report in reports_dict.items():
         # display the report inside of a rich panel, using
         # a markdown-based formatter for the report's contents;
         # note that use of console.print must occur in two
@@ -51,7 +49,7 @@ def display_reports(reports_dict: Dict[str, str]) -> None:
 
 
 @cli.command()
-def transport(  # noqa: PLR0912, PLR0913, PLR0915
+def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
     spreadsheet_directory: Path = typer.Option(
         ...,
         "--spreadsheet-directory",
