@@ -1,21 +1,20 @@
 <img src="https://github.com/GatorEducator/cellveyor/blob/master/.github/images/cellveyor-logo.svg" alt="Cellveyor Logo"
-    title="Cellveyor Logo" />
+title="Cellveyor Logo" />
 
 # Cellveyor
 
 [![build](https://github.com/GatorEducator/cellveyor/actions/workflows/build.yml/badge.svg)](https://github.com/GatorEducator/cellveyor/actions/workflows/build.yml)
-[![Code Style: black](https://img.shields.io/badge/Code%20Style-Black-blue.svg)](https://github.com/psf/black)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-Yes-blue.svg)](https://github.com/gkapfham/chasten/graphs/commit-activity)
 [![License LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 
 ## Overview
 
 Cellveyor is a command-line tool that automatically turns the cells of a
-spreadsheet into per-student grade reports. You point Cellveyor at a
-gradebook spreadsheet, describe which columns hold grades and which hold
-feedback, and it creates one markdown report per student — displayed directly
-in the terminal or, with the `--transfer-report` option, posted as a comment
-on the student's GitHub pull request.
+spreadsheet into per-student grade reports. You point Cellveyor at a gradebook
+spreadsheet, describe which columns hold grades and which hold feedback, and it
+creates one markdown report per student. Cellveyor displays directly in the
+terminal or, with the `--transfer-report` option, posts it as a comment on the
+student's GitHub pull request, often created with GitHub Classroom (i.e., cs50).
 
 Cellveyor is designed for the gradebook spreadsheets used in GitHub
 Classroom-based courses. The spreadsheet follows a fixed shape: each row is
@@ -147,8 +146,7 @@ uv run cellveyor \
 ```
 
 **Column filtering.** `--column-regexp` uses `pandas` regex filtering
-(`re.search` semantics on the column names), so `^(Summary Grade|Final
-Grade) .*$` selects every column that starts with "Summary Grade" or
+(`re.search` semantics on the column names), so `^(Summary Grade|Final Grade) .*$` selects every column that starts with "Summary Grade" or
 "Final Grade". The key attribute column is always kept regardless of the
 regular expression. If the regular expression matches no columns, or the
 filter leaves no rows, Cellveyor prints a yellow warning and continues
@@ -230,14 +228,14 @@ The structure of each report is fixed:
 1. **Greeting** — `**Hello @<key-value>!**`, where the key value is the
    student's value in the key attribute column (normally the GitHub
    username).
-2. **Header** — the value of the `header` key in the feedback files, when
+1. **Header** — the value of the `header` key in the feedback files, when
    present.
-3. **Summary scores** — one bullet per selected grade column, rendered as
+1. **Summary scores** — one bullet per selected grade column, rendered as
    `- **<column name>**: <value>` in the sheet's column order.
-4. **Additional feedback** — one bullet per resolved feedback key, only when
+1. **Additional feedback** — one bullet per resolved feedback key, only when
    at least one key in the row's feedback column exists in the feedback
    files.
-5. **Footer** — the value of the `footer` key in the feedback files, when
+1. **Footer** — the value of the `footer` key in the feedback files, when
    present.
 
 The header and footer are expected to be strings. Non-string values (like the
