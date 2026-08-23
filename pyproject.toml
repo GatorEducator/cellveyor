@@ -70,7 +70,7 @@ branch = true
 omit = ["tests/*", "**/__init__.py", "scripts/*"]
 
 [tool.coverage.report]
-fail_under = 90
+fail_under = 98
 show_missing = true
 precision = 2
 exclude_lines = [
@@ -129,12 +129,11 @@ ignore-missing-imports = ["*"]
 project = "cellveyor"
 scripts = "scripts"
 tests = "tests"
-coveragefailunder = "90"
 directtestedfailunder = "75"
 ruff-check-command = { var = "ruff check {project} {tests} {scripts}", recursive = true }
 ruff-fixformat-command = { var = "ruff format {project} {tests} {scripts}", recursive = true }
 ruff-format-command = { var = "ruff format --check {project} {tests} {scripts}", recursive = true }
-coverage-test-command = { var = "pytest -s --cov=cellveyor --cov-branch --cov-fail-under=90 --cov-report=term-missing tests/", recursive = true }
+coverage-test-command = { var = "pytest -s --cov=cellveyor --cov-branch --cov-report=term-missing tests/", recursive = true }
 coverage-test-command-silent = "pytest -x --show-capture=no --cov-report term-missing --cov-report json --cov --cov-branch"
 developer-test-command = "pytest -x -s"
 developer-test-silent-command = "pytest -x --show-capture=no"
@@ -181,7 +180,7 @@ test-not-xdist = { cmd = "pytest -x -s -vv -p no:xdist", help = "Run the pytest 
 test-silent = { cmd = "pytest -x --show-capture=no -n auto", help = "Run the pytest test suite without showing output" }
 test-silent-not-randomly = { cmd = "pytest -x --show-capture=no -p no:randomly", help = "Run the pytest test suite without showing output and order randomization" }
 test-silent-not-xdist = { cmd = "pytest -x --show-capture=no -p no:xdist", help = "Run the pytest test suite without showing output and test distribution" }
-test-coverage = { cmd = "pytest -s --cov=cellveyor --cov-branch --cov-fail-under={coveragefailunder} --cov-report=term-missing tests/", help = "Run the pytest test suite with coverage tracking", use_vars = true }
+test-coverage = { cmd = "{coverage-test-command}", help = "Run the pytest test suite and enforce the fail_under threshold in [tool.coverage.report]", use_vars = true }
 test-parallel = { cmd = "pytest -x -s -vv -n auto -p no:sugar", help = "Run the pytest test suite with parallel execution and order randomization" }
 cosmic-ray-init = { cmd = "{cosmic-ray-init-command}", help = "Initialize cosmic-ray mutation testing session", use_vars = true }
 cosmic-ray-baseline = { cmd = "{cosmic-ray-baseline-command}", help = "Run cosmic-ray baseline tests", use_vars = true }
