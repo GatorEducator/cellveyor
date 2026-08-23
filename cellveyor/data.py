@@ -1,11 +1,11 @@
 """Access and manipulate data."""
 
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Final, Literal, Tuple
 
 import pandas
 
-ALL = "all"
+ALL: Final[Literal["all"]] = "all"
 
 
 def access_dataframes(spreadsheet_file: Path) -> Dict[str, pandas.DataFrame]:
@@ -41,7 +41,7 @@ def key_attribute_column_filter(
     # those columns that matched the regular expression
     result_df = sheet_dataframe[
         [key_attribute_name] + list(selected_columns.columns)  # noqa: RUF005
-    ].dropna(how=ALL)  # type: ignore
+    ].dropna(how=ALL)
     # filter down further for the specific value of the key attribute;
     # this is particularly useful when extracting and reporting data
     # for a specific row inside of the matching dataframe
@@ -51,4 +51,4 @@ def key_attribute_column_filter(
         ]
     # for both of the two previous steps, make sure to drop any rows that contain NA values
     # return the columns that were selected and then the resulting dataframe
-    return (selected_columns, result_df)  # type: ignore
+    return (selected_columns, result_df)

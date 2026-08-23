@@ -58,8 +58,8 @@ def create_fully_qualified_github_repository(
     fully_qualified_github_repo_name = (
         f"{fully_qualified_github_repo_name}{DASH}{github_username}"
     )
-    # Example of a fully qualified name, using the GitHub Classroom format:
-    # Allegheny-Computer-Science-203-F2023/computer-science-203-fall-2023-executable-exam-1-gkapfham
+    # example of a fully qualified name, using the GitHub Classroom format:
+    # allegheny-Computer-Science-203-F2023/computer-science-203-fall-2023-executable-exam-1-gkapfham
     return fully_qualified_github_repo_name
 
 
@@ -102,7 +102,7 @@ def transfer_reports_to_github(
         console.print()
         return
     # extract the keys for the different repositories on
-    # GitHub that will receive a report during this transfer
+    # gitHub that will receive a report during this transfer
     github_report_keys = github_reports_dict.keys()
     # create a customized progress bar using rich
     progress_bar = Progress(

@@ -1,6 +1,6 @@
 """Create reports based on content in dataframes."""
 
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from pandas import DataFrame
 
@@ -21,7 +21,7 @@ SUMMARY_LABEL = "📔 Here are your summary scores:"
 
 def add_feedback_if_exists(
     report: str,
-    feedback_dict: Dict[str, str],
+    feedback_dict: Dict[str, Any],
     feedback_key: str,
     make_list: bool = False,
 ) -> str:
@@ -73,7 +73,7 @@ def create_per_key_report(
     result_dataframe: DataFrame,
     selected_columns: DataFrame,
     feedback_regexp: str,
-    feedback_dict: Dict[str, str],
+    feedback_dict: Dict[str, Any],
 ) -> Dict[str, str]:
     """Create a per-key report for the provided dataframe."""
     # create an empty dictionary for the reports, organized as:

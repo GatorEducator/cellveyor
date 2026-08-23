@@ -1,4 +1,4 @@
-"""Pytest test suite for the filesystem module."""
+"""Pytest test suite for the data module."""
 
 from pathlib import Path
 
@@ -6,6 +6,7 @@ from cellveyor import data
 
 
 def test_access_dataframes() -> None:
+    """Test that access_dataframes returns different results for different files."""
     spreadsheet_file_one = Path("spreadsheets/fake_spreadsheet.xlsx")
     spreadsheet_file_two = Path("spreadsheets/example_spreadsheet.xlsx")
     test_one = data.access_dataframes(spreadsheet_file_one)
@@ -14,7 +15,7 @@ def test_access_dataframes() -> None:
 
 
 def test_key_attribute_column_filter() -> None:
-    # test key_attribute_column_filter function
+    """Test key_attribute_column_filter function."""
     dataframes_dict = data.access_dataframes(
         Path("spreadsheets/fake_spreadsheet.xlsx")
     )

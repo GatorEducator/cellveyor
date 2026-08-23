@@ -1,4 +1,4 @@
-"""Define constants with dataclasses for use in Cellveyor"""
+"""Define constants with dataclasses for use in Cellveyor."""
 
 from dataclasses import dataclass
 

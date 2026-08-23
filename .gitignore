@@ -375,3 +375,10 @@ credentials.json
 
 # poetry.toml file
 poetry.toml
+
+# Workflow file
+WORKFLOW.md
+
+# Coverage files
+tsc.json
+cosmic-ray.toml
