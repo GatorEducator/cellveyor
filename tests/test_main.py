@@ -376,3 +376,115 @@ def test_transport_transfer_failure() -> None:
         )
         assert result.exit_code == 1
         assert "GitHub transfer failed" in _strip_ansi(result.output)
+
+
+def test_transport_spreadsheet_read_filenotfound() -> None:
+    """Test transport when the spreadsheet read raises FileNotFoundError."""
+    runner = CliRunner()
+    with patch(
+        "cellveyor.main.data.access_dataframes",
+        side_effect=FileNotFoundError("missing"),
+    ):
+        result = runner.invoke(
+            main.cli,
+            [
+                "--spreadsheet-directory",
+                "spreadsheets",
+                "--spreadsheet-file",
+                "fake_spreadsheet.xlsx",
+                "--sheet-name",
+                "Main",
+                "--key-attribute",
+                "Student GitHub",
+                "--column-regexp",
+                ".*",
+                "--feedback-regexp",
+                ".*",
+            ],
+        )
+    assert result.exit_code == 1
+    assert "Spreadsheet file not found" in _strip_ansi(result.output)
+
+
+def test_transport_spreadsheet_read_generic_error() -> None:
+    """Test transport when reading the spreadsheet fails unexpectedly."""
+    runner = CliRunner()
+    with patch(
+        "cellveyor.main.data.access_dataframes",
+        side_effect=Exception("boom"),
+    ):
+        result = runner.invoke(
+            main.cli,
+            [
+                "--spreadsheet-directory",
+                "spreadsheets",
+                "--spreadsheet-file",
+                "fake_spreadsheet.xlsx",
+                "--sheet-name",
+                "Main",
+                "--key-attribute",
+                "Student GitHub",
+                "--column-regexp",
+                ".*",
+                "--feedback-regexp",
+                ".*",
+            ],
+        )
+    assert result.exit_code == 1
+    assert "Failed to read spreadsheet" in _strip_ansi(result.output)
+
+
+def test_transport_column_filter_generic_error() -> None:
+    """Test transport when the column filter fails unexpectedly."""
+    runner = CliRunner()
+    with patch(
+        "cellveyor.main.data.key_attribute_column_filter",
+        side_effect=RuntimeError("boom"),
+    ):
+        result = runner.invoke(
+            main.cli,
+            [
+                "--spreadsheet-directory",
+                "spreadsheets",
+                "--spreadsheet-file",
+                "fake_spreadsheet.xlsx",
+                "--sheet-name",
+                "Main",
+                "--key-attribute",
+                "Student GitHub",
+                "--column-regexp",
+                ".*",
+                "--feedback-regexp",
+                ".*",
+            ],
+        )
+    assert result.exit_code == 1
+    assert "Failed to filter columns" in _strip_ansi(result.output)
+
+
+def test_transport_report_creation_error() -> None:
+    """Test transport when report creation fails unexpectedly."""
+    runner = CliRunner()
+    with patch(
+        "cellveyor.main.report.create_per_key_report",
+        side_effect=RuntimeError("boom"),
+    ):
+        result = runner.invoke(
+            main.cli,
+            [
+                "--spreadsheet-directory",
+                "spreadsheets",
+                "--spreadsheet-file",
+                "fake_spreadsheet.xlsx",
+                "--sheet-name",
+                "Main",
+                "--key-attribute",
+                "Student GitHub",
+                "--column-regexp",
+                ".*",
+                "--feedback-regexp",
+                ".*",
+            ],
+        )
+    assert result.exit_code == 1
+    assert "Failed to create reports" in _strip_ansi(result.output)

@@ -174,6 +174,19 @@ def test_create_per_key_report_effective_feedback() -> None:
     assert "Here is some additional feedback" not in reports["alice"]
 
 
+def test_create_per_key_report_feedback_index_error() -> None:
+    """Test feedback fallback when row index is out of bounds."""
+    result_df = pandas.DataFrame(
+        {"Student GitHub": ["alice"], "Grade": [90], "Feedback": ["good"]},
+        index=[5],
+    )
+    selected = pandas.DataFrame({"Grade": [90], "Feedback": ["good"]})
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "Feedback", {}
+    )
+    assert "alice" in reports
+
+
 @given(text=strategies.text(max_size=20))
 def test_fuzz_create_feedback_list(text: str) -> None:
     """Fuzz test create_feedback_list does not crash."""

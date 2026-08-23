@@ -3,6 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from github import GithubException
 
 from cellveyor import transfer
 
@@ -140,6 +141,49 @@ def test_transfer_report_to_github_handles_generic_exception() -> None:
             "unexpected"
         )
         with pytest.raises(Exception):
+            transfer.transfer_report_to_github(
+                "token", "org/prefix-user", "report"
+            )
+
+
+def test_transfer_reports_to_github_generic_exception() -> None:
+    """Test transfer loop catches generic exceptions per repository."""
+    with patch(
+        "cellveyor.transfer.transfer_report_to_github",
+        side_effect=RuntimeError("unexpected"),
+    ):
+        # should not raise; the loop prints the error and moves on
+        transfer.transfer_reports_to_github(
+            "fake_token", "org", "prefix", {"alice": "report"}
+        )
+
+
+def test_transfer_report_to_github_repo_without_separators() -> None:
+    """Test transfer with a repository name lacking slash and dash."""
+    with (
+        patch("cellveyor.transfer.Github") as mock_github,
+        patch("cellveyor.transfer.Auth"),
+    ):
+        mock_repo = MagicMock()
+        mock_pull = MagicMock()
+        mock_github.return_value.get_repo.return_value = mock_repo
+        mock_repo.get_pull.return_value = mock_pull
+
+        transfer.transfer_report_to_github("token", "bad-repo-name", "report")
+        mock_repo.get_pull.assert_called_once_with(1)
+        mock_pull.create_issue_comment.assert_called_once_with("report")
+
+
+def test_transfer_report_to_github_raises_github_exception() -> None:
+    """Test transfer_report_to_github re-raises GithubException."""
+    with (
+        patch("cellveyor.transfer.Github") as mock_github,
+        patch("cellveyor.transfer.Auth"),
+    ):
+        mock_github.return_value.get_repo.side_effect = GithubException(
+            404, "not found"
+        )
+        with pytest.raises(GithubException):
             transfer.transfer_report_to_github(
                 "token", "org/prefix-user", "report"
             )
