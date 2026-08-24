@@ -1,5 +1,6 @@
 """Create reports based on content in dataframes."""
 
+import math
 from typing import Any, Dict, List
 
 from pandas import DataFrame
@@ -110,6 +111,13 @@ def create_per_key_report(
         # add data to the current report for every column and its value
         for column_name in selected_columns.columns:
             column_value = row[column_name]
+            # a missing cell arrives as float NaN for numeric columns
+            # and as None for object columns; render either as a blank
+            # value instead of the literal "nan" or "None" text
+            if column_value is None or (
+                isinstance(column_value, float) and math.isnan(column_value)
+            ):
+                column_value = ""
             current_report = (
                 current_report
                 + f"{DASH}{SPACE}**{column_name}**:{SPACE}{column_value}{NEWLINE}"
