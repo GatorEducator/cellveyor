@@ -230,7 +230,10 @@ The structure of each report is fixed:
 1. **Header** — the value of the `header` key in the feedback files, when
    present.
 1. **Summary scores** — one bullet per selected grade column, rendered as
-   `- **<column name>**: <value>` in the sheet's column order.
+   `- **<column name>**: <value>` in the sheet's column order. A missing
+   value in a grade column renders as a blank value instead of the literal
+   `nan` or `None`, so a student with an ungraded column sees an empty
+   entry rather than confusing text.
 1. **Additional feedback** — one bullet per resolved feedback key, only when
    at least one key in the row's feedback column exists in the feedback
    files.
