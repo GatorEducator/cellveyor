@@ -96,7 +96,7 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
         None,
         "--feedback-file",
         "-f",
-        help="Feedback file(s) in JSON format",
+        help="Feedback file(s) in YAML format",
     ),
     github_token: str = typer.Option(
         None,
