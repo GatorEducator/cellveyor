@@ -20,20 +20,15 @@ on:
 jobs:
   build:
     # Use the latest version of Ubuntu, MacOS, and Windows
-    # Use the latest and most stable version of Python
-    # Important: test coverage monitoring and reporting
-    # through a badge and the GitHub Actions job summary
-    # only takes place with the Linux operating system.
-    # Important: the MacOS and Windows operating systems
-    # have test coverage calculation take place but they
-    # do not report the test coverage beyond its display
-    # inside of the GitHub Actions panel for that job.
+    # Use the most recent stable Python versions in the supported range
+    # Important: the coverage threshold is enforced on the Linux runner;
+    # the MacOS and Windows runners run linting, type checking, and tests
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.11"]
+        python-version: ["3.11", "3.13"]
         include:
           - os: macos-latest
             python-version: "3.11"
@@ -43,18 +38,13 @@ jobs:
     steps:
     # Checkout the code of the repository
         - name: Check out Repository Code
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
           with:
             fetch-depth: 0
-        # Run the mdl linting tool
-        # Refers to .mdlrc file in repository
-        - name: Run Markdown Linting
-          if: matrix.os == 'ubuntu-latest'
-          uses: actionshub/markdownlint@main
         # Setup Python for the current language version
         - name: Setup Python ${{ matrix.python-version }}
           if: always()
-          uses: actions/setup-python@v4
+          uses: actions/setup-python@v5
           with:
             python-version: ${{ matrix.python-version }}
         # Install uv
@@ -68,18 +58,28 @@ jobs:
           if: always()
           run: |
             uv sync --group dev
-        # Run the linters
+        # Run the linters (including the rumdl markdown linter)
         - name: Run Linters
           if: always()
           run: |
             uv run task lint
+        # Run the type checkers
+        - name: Run Type Checks
+          if: always()
+          run: |
+            uv run task typecheck
         # Run the program
         - name: Run program
           if: always()
           run: |
-            uv run cellveyor --spreadsheet-directory $PWD/spreadsheets/ --spreadsheet-file $PWD/spreadsheets/fake_spreadsheet.xlsx/ --sheet-name Main --key-attribute "Student GitHub" --key-value "gkapfham" --column-regexp '^(Summary Grade|Final Grade) .*$' --feedback-regexp "Summary Grade 1 - Feedback" --feedback-file $PWD/spreadsheets/feedback.yml/ 
+            uv run cellveyor --spreadsheet-directory $PWD/spreadsheets/ --spreadsheet-file $PWD/spreadsheets/fake_spreadsheet.xlsx --sheet-name Main --key-attribute "Student GitHub" --key-value "gkapfham" --column-regexp '^(Summary Grade|Final Grade) .*$' --feedback-regexp "Summary Grade 1 - Feedback" --feedback-file $PWD/spreadsheets/feedback.yml
         # Run the tests
         - name: Run Tests
           if: always()
           run: |
             uv run task test
+        # Enforce the coverage threshold (Linux only)
+        - name: Run Coverage Check
+          if: matrix.os == 'ubuntu-latest'
+          run: |
+            uv run task test-coverage
