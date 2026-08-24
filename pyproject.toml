@@ -1,19 +1,42 @@
 [project]
 name = "cellveyor"
 version = "0.1.0"
-description = ""
+description = "Generate per-student grade reports from spreadsheet cells and transfer them to GitHub."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 authors = [{name = "Gregory M. Kapfhammer", email = "gkapfham@allegheny.edu"}]
+license = "GPL-3.0-only"
+keywords = [
+    "education",
+    "gradebook",
+    "github-classroom",
+    "grades",
+    "reports",
+    "spreadsheet",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Education",
+]
 dependencies = [
     "rich>=13.4.2,<14.0.0",
     "pandas>=2.1.1,<3.0.0",
     "openpyxl>=3.1.2,<4.0.0",
-    "requests>=2.31.0,<3.0.0",
     "pygithub>=2.1.1,<3.0.0",
     "pyyaml>=6.0.1,<7.0.0",
     "typer>=0.20.0,<1.0.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/GatorEducator/cellveyor"
+Repository = "https://github.com/GatorEducator/cellveyor"
 
 [project.scripts]
 cellveyor = "cellveyor.main:cli"
@@ -54,6 +77,20 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["cellveyor"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    ".coverage",
+    ".coverage.*",
+    ".hypothesis",
+    ".mypy_cache",
+    ".pi",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".rumdl_cache",
+    ".venv",
+    "dist",
+]
 
 [tool.pytest.ini_options]
 filterwarnings = [
