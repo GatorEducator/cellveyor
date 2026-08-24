@@ -187,6 +187,43 @@ def test_create_per_key_report_feedback_index_error() -> None:
     assert "alice" in reports
 
 
+def test_create_per_key_report_missing_grade_nan() -> None:
+    """Confirm that a missing numeric grade renders as a blank value."""
+    df = pandas.DataFrame(
+        {"Student GitHub": ["alice"], "Grade": [float("nan")]}
+    )
+    selected = df[["Grade"]]
+    result_df = df[["Student GitHub", "Grade"]]
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "NOMATCH", {}
+    )
+    assert "nan" not in reports["alice"]
+    assert "- **Grade**:" in reports["alice"]
+
+
+def test_create_per_key_report_missing_grade_none() -> None:
+    """Confirm that a missing object grade renders as a blank value."""
+    df = pandas.DataFrame({"Student GitHub": ["alice"], "Grade": [None]})
+    selected = df[["Grade"]]
+    result_df = df[["Student GitHub", "Grade"]]
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "NOMATCH", {}
+    )
+    assert "None" not in reports["alice"]
+    assert "- **Grade**:" in reports["alice"]
+
+
+def test_create_per_key_report_present_grade_unchanged() -> None:
+    """Confirm that a present grade still renders normally."""
+    df = pandas.DataFrame({"Student GitHub": ["alice"], "Grade": [92.5]})
+    selected = df[["Grade"]]
+    result_df = df[["Student GitHub", "Grade"]]
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "NOMATCH", {}
+    )
+    assert "- **Grade**: 92.5" in reports["alice"]
+
+
 @given(text=strategies.text(max_size=20))
 def test_fuzz_create_feedback_list(text: str) -> None:
     """Fuzz test create_feedback_list does not crash."""
