@@ -38,7 +38,7 @@ def key_attribute_column_filter(
             f"Invalid column regular expression '{column_regexp}': {exc}"
         ) from exc
     # avoid duplicate key column when regexp matches the key itself
-    # (e.g., ".*" or "Student.*") — otherwise row[key] returns a Series
+    # (e.g., ".*" or "Student.*"); otherwise row[key] returns a Series
     selected_columns = selected_columns.drop(
         columns=[key_attribute_name], errors="ignore"
     )
