@@ -86,7 +86,7 @@ through `uv run task <name>`:
 - **Test suite:** `uv run task test` (`pytest -x -s -vv -n auto` with randomly + xdist)
 - **Test variants:** `uv run task test-not-randomly`, `uv run task test-not-xdist`, `uv run task test-silent`, `uv run task test-parallel`
 - **Test with coverage:** `uv run task test-coverage` (enforces `fail_under = 98` in `pyproject.toml`)
-- **Direct coverage check:** `uv run task test-coverage-check` (enforces `directtestedfailunder = 75` via `scripts/tsc.py`)
+- **Direct coverage check:** `uv run task test-coverage-check` (enforces `directtestedfailunder = 100` via `scripts/tsc.py`)
 - **Run a single test:**
   `uv run pytest tests/test_file.py::test_function -x -s -vv`
 
@@ -159,7 +159,7 @@ All tests must follow these standards:
 - Order tests logically for readability.
 - Tests must be independent — runnable in random order without side effects.
 - Tests must pass on local machines and in CI on macOS, Linux, and Windows.
-- Aim for full function, statement, and branch coverage (global `fail_under = 98`, direct coverage `>= 75%` via `scripts/tsc.py`).
+- Aim for full function, statement, and branch coverage (global `fail_under = 98`, direct coverage `= 100%` via `scripts/tsc.py` — every function must have a direct test, enforced by `uv run task test-coverage-check`).
 - Property-based tests using `hypothesis` must be marked with
   `@pytest.mark.propertybased` or `@pytest.mark.fuzz`.
 - Tests must not produce console output.
