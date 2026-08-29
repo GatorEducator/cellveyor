@@ -143,6 +143,12 @@ All Python code must follow these standards:
 - Supports Python `>=3.12, <3.14` on macOS, Linux, and Windows (see `pyproject.toml` `requires-python` and `README.md`).
 - CLI is built with `typer` (`cellveyor/main.py:cli`) and terminal output with `rich`; spreadsheet I/O uses `pandas` + `openpyxl`; GitHub transfer uses `PyGithub`; feedback files are `yaml`.
 
+## Privacy & Security (FERPA / Tokens)
+
+- Real gradebooks under `/home/gkapfham/working/data/` and any `CMPSC-*-Gradebook.xlsx` contain FERPA-protected student data. Never commit them, never copy them into `spreadsheets/` or `tests/`, and never paste full rows, emails, or grades into logs, issues, or chat. Use `spreadsheets/fake_spreadsheet.xlsx` for all examples and tests; use `tmp_path` for synthetic sheets.
+- Never log or echo a GitHub token. The `transport` command takes `--github-token`; tests must mock `PyGithub` (`tests/test_transfer.py` pattern) and never assert the literal token string. When reproducing a transfer failure, use `TOKEN` or `fake_token` as the placeholder.
+- When inspecting a real gradebook locally, read only the schema (`df.columns.tolist()`, `df.shape`) or a single anonymized row; avoid dumping `df.to_dict()` for all students.
+
 ## Testing Requirements
 
 All tests must follow these standards:
@@ -160,9 +166,26 @@ All tests must follow these standards:
 - Tests must be independent — runnable in random order without side effects.
 - Tests must pass on local machines and in CI on macOS, Linux, and Windows.
 - Aim for full function, statement, and branch coverage (global `fail_under = 98`, direct coverage `= 100%` via `scripts/tsc.py` — every function must have a direct test, enforced by `uv run task test-coverage-check`).
+- **Direct-test definition:** `scripts/tsc.py` counts a function as directly
+  tested only if at least one test function's name contains the target
+  function's name as a substring (e.g., `test_key_attribute_column_filter`
+  covers `key_attribute_column_filter`). Indirect coverage through a helper
+  does not count. Run `uv run task test-coverage-check --verbose` (or
+  `uv run python -m scripts.tsc --threshold 100 --verbose`) to see which
+  functions are missing a direct test, then add or rename a `test_` to
+  include the exact function name.
 - Property-based tests using `hypothesis` must be marked with
   `@pytest.mark.propertybased` or `@pytest.mark.fuzz`.
 - Tests must not produce console output.
+
+## Diagnostic Style
+
+Cellveyor has a strict UX contract for CLI output that agents must preserve:
+
+- **Blocking errors** (exit 1, red): missing directory/file, sheet/key not found, invalid regex, missing GitHub args with `--transfer-report`, spreadsheet read or GitHub transfer failure. Use `console.print(..., style="red")` with `:person_shrugging:` prefix and a dash list via `_print_dash_list` for available sheets/columns or missing options, followed by a hint line. Example: `Key attribute 'X' not found` + `Available columns:` + `Hint: check --key-attribute…`.
+- **Warnings** (exit 0, yellow): no columns matched, no rows after filtering, no reports generated, malformed or missing feedback files skipped. Use `style="yellow"` with `:warning:` and continue; never promote a warning to exit 1.
+- **Exit codes:** `0` for success or warning-only runs; `1` for any blocking error. Keep this invariant when adding new validation for `--feedback-regexp` or other options.
+- Test assertions for this output must remain ANSI-tolerant (see next section).
 
 ## CLI Output Testing and Rich Encoding Traps to Avoid
 
