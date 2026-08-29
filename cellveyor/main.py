@@ -1,14 +1,20 @@
 """🚚 Cellveyor is a conveyor for the cells in spreadsheets."""
 
+import os
 from pathlib import Path
 from typing import Dict, List
 
 import typer
+from dotenv import load_dotenv
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
 
 from cellveyor import constants, data, filesystem, report, transfer
+
+# load CELLVEYOR_GITHUB_TOKEN (and other env vars) from .env if present;
+# env vars already set in the shell take precedence (override=False)
+load_dotenv()
 
 # create a Typer object to support the command-line interface
 cli = typer.Typer(no_args_is_help=True)
@@ -84,7 +90,7 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
         ...,
         "--feedback-regexp",
         "-r",
-        help="Regular expression for matching feedback columns in specific sheet",
+        help="Regular expression for matching feedback columns in the sheet",
     ),
     key_value: str = typer.Option(
         None,
@@ -98,11 +104,11 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
         "-f",
         help="Feedback file(s) in YAML format",
     ),
-    github_token: str = typer.Option(
+    github_token_env: str | None = typer.Option(
         None,
-        "--github-token",
+        "--github-token-env",
         "-g",
-        help="GitHub authorization token",
+        help="Name of env var for GitHub token (CELLVEYOR_GITHUB_TOKEN or GITHUB_TOKEN)",
     ),
     github_organization: str = typer.Option(
         None,
@@ -118,10 +124,26 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
     ),
     transfer_report: bool = typer.Option(
         False,
+        "--transfer-report/--no-transfer-report",
+        "-t",
         help="Transfer a report to GitHub",
     ),
 ) -> None:
-    """Transport a specified spreadsheet."""
+    """Generate per-student grade reports from spreadsheet cells and optionally transfer them to GitHub."""
+    # resolve GitHub token from env var name (default CELLVEYOR_GITHUB_TOKEN, fallback GITHUB_TOKEN)
+    # handle direct calls where typer default is OptionInfo (type checker sees str, so use name check)
+    if (
+        github_token_env is None
+        or type(github_token_env).__name__ == "OptionInfo"
+    ):  # type: ignore[unreachable]
+        github_token_env = "CELLVEYOR_GITHUB_TOKEN"
+    # load_dotenv() already populated os.environ from .env
+    github_token: str | None = os.getenv(github_token_env)
+    # fallback to GITHUB_TOKEN when using the default var name
+    if not github_token and github_token_env == "CELLVEYOR_GITHUB_TOKEN":
+        fallback = os.getenv("GITHUB_TOKEN")
+        if fallback:
+            github_token = fallback
     # determine if the provided directory and file are valid
     if not filesystem.confirm_valid_file_in_directory(
         spreadsheet_file, spreadsheet_directory
@@ -290,7 +312,9 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
         # validate required GitHub arguments before attempting transfer
         missing_github_args = []
         if not github_token:
-            missing_github_args.append("--github-token")
+            missing_github_args.append(
+                "--github-token-env (or set CELLVEYOR_GITHUB_TOKEN / GITHUB_TOKEN in env/.env)"
+            )
         if not github_organization:
             missing_github_args.append("--github-organization")
         if not github_repository_prefix:
@@ -305,11 +329,12 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
                 "Missing options", missing_github_args, color="red"
             )
             console.print(
-                "  Hint: provide all GitHub options or omit --transfer-report",
+                "  Hint: set CELLVEYOR_GITHUB_TOKEN in env/.env or use --github-token-env <VAR_NAME>",
                 style="red",
             )
             console.print()
             raise typer.Exit(code=1)
+        assert github_token is not None
         try:
             transfer.transfer_reports_to_github(
                 github_token,
