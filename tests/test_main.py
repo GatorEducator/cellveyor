@@ -333,14 +333,13 @@ def test_transport_with_transfer_mock() -> None:
                 ".*",
                 "--feedback-regexp",
                 ".*",
-                "--github-token",
-                "fake",
                 "--github-organization",
                 "org",
                 "--github-repository-prefix",
                 "prefix",
                 "--transfer-report",
             ],
+            env={"CELLVEYOR_GITHUB_TOKEN": "fake"},
         )
         assert result.exit_code == 0
         mock.assert_called_once()
@@ -368,14 +367,13 @@ def test_transport_transfer_failure() -> None:
                 ".*",
                 "--feedback-regexp",
                 ".*",
-                "--github-token",
-                "fake",
                 "--github-organization",
                 "org",
                 "--github-repository-prefix",
                 "prefix",
                 "--transfer-report",
             ],
+            env={"CELLVEYOR_GITHUB_TOKEN": "fake"},
         )
         assert result.exit_code == 1
         assert "GitHub transfer failed" in _strip_ansi(result.output)
@@ -532,7 +530,6 @@ def test_transport_direct_success() -> None:
             feedback_regexp=".*",
             key_value=None,  # type: ignore
             feedback_file=None,  # type: ignore
-            github_token=None,  # type: ignore
             github_organization=None,  # type: ignore
             github_repository_prefix=None,  # type: ignore
             transfer_report=False,
@@ -551,7 +548,6 @@ def test_transport_direct_invalid_directory() -> None:
             feedback_regexp=".*",
             key_value=None,  # type: ignore
             feedback_file=None,  # type: ignore
-            github_token=None,  # type: ignore
             github_organization=None,  # type: ignore
             github_repository_prefix=None,  # type: ignore
             transfer_report=False,
@@ -573,7 +569,6 @@ def test_transport_direct_invalid_file_in_valid_directory(
             feedback_regexp=".*",
             key_value=None,  # type: ignore
             feedback_file=None,  # type: ignore
-            github_token=None,  # type: ignore
             github_organization=None,  # type: ignore
             github_repository_prefix=None,  # type: ignore
             transfer_report=False,
@@ -605,7 +600,6 @@ def test_transport_direct_wrong_sheet() -> None:
                 feedback_regexp=".*",
                 key_value=None,  # type: ignore
                 feedback_file=None,  # type: ignore
-                github_token=None,  # type: ignore
                 github_organization=None,  # type: ignore
                 github_repository_prefix=None,  # type: ignore
                 transfer_report=False,
@@ -641,7 +635,6 @@ def test_transport_direct_wrong_key_attribute() -> None:
                 feedback_regexp=".*",
                 key_value=None,  # type: ignore
                 feedback_file=None,  # type: ignore
-                github_token=None,  # type: ignore
                 github_organization=None,  # type: ignore
                 github_repository_prefix=None,  # type: ignore
                 transfer_report=False,
@@ -686,7 +679,6 @@ def test_transport_direct_with_feedback_missing_file() -> None:
             feedback_regexp=".*",
             key_value=None,  # type: ignore
             feedback_file=[pathlib.Path("/tmp/notexist.yml")],
-            github_token=None,  # type: ignore
             github_organization=None,  # type: ignore
             github_repository_prefix=None,  # type: ignore
             transfer_report=False,
@@ -727,7 +719,6 @@ def test_transport_direct_no_columns_matched() -> None:
             feedback_regexp=".*",
             key_value=None,  # type: ignore
             feedback_file=None,  # type: ignore
-            github_token=None,  # type: ignore
             github_organization=None,  # type: ignore
             github_repository_prefix=None,  # type: ignore
             transfer_report=False,
@@ -759,6 +750,9 @@ def test_transport_direct_transfer_with_mock() -> None:
         ),
         patch("cellveyor.main.display_reports"),
         patch("cellveyor.main.transfer.transfer_reports_to_github") as mock,
+        patch.dict(
+            "os.environ", {"CELLVEYOR_GITHUB_TOKEN": "fake"}, clear=False
+        ),
     ):
         main.transport(
             spreadsheet_directory=pathlib.Path("spreadsheets"),
@@ -769,7 +763,6 @@ def test_transport_direct_transfer_with_mock() -> None:
             feedback_regexp=".*",
             key_value=None,  # type: ignore
             feedback_file=None,  # type: ignore
-            github_token="fake",
             github_organization="org",
             github_repository_prefix="prefix",
             transfer_report=True,
@@ -812,9 +805,184 @@ def test_transport_direct_missing_github_args() -> None:
                 feedback_regexp=".*",
                 key_value=None,  # type: ignore
                 feedback_file=None,  # type: ignore
-                github_token=None,  # type: ignore
                 github_organization=None,  # type: ignore
                 github_repository_prefix=None,  # type: ignore
                 transfer_report=True,
             )
         assert exc.value.exit_code == 1
+
+
+def test_transport_with_token_env_default() -> None:
+    """Test transfer with CELLVEYOR_GITHUB_TOKEN env var (default)."""
+    runner = CliRunner()
+    with patch("cellveyor.main.transfer.transfer_reports_to_github") as mock:
+        result = runner.invoke(
+            main.cli,
+            [
+                "--spreadsheet-directory",
+                "spreadsheets",
+                "--spreadsheet-file",
+                "fake_spreadsheet.xlsx",
+                "--sheet-name",
+                "Main",
+                "--key-attribute",
+                "Student GitHub",
+                "--column-regexp",
+                ".*",
+                "--feedback-regexp",
+                ".*",
+                "--github-organization",
+                "org",
+                "--github-repository-prefix",
+                "prefix",
+                "--transfer-report",
+            ],
+            env={"CELLVEYOR_GITHUB_TOKEN": "fake_from_env"},
+        )
+        assert result.exit_code == 0
+        mock.assert_called_once()
+        # ensure token from env was used
+        assert mock.call_args[0][0] == "fake_from_env"
+
+
+def test_transport_with_token_env_fallback_github_token() -> None:
+    """Test transfer with GITHUB_TOKEN fallback when CELLVEYOR not set."""
+    runner = CliRunner()
+    with patch("cellveyor.main.transfer.transfer_reports_to_github") as mock:
+        result = runner.invoke(
+            main.cli,
+            [
+                "--spreadsheet-directory",
+                "spreadsheets",
+                "--spreadsheet-file",
+                "fake_spreadsheet.xlsx",
+                "--sheet-name",
+                "Main",
+                "--key-attribute",
+                "Student GitHub",
+                "--column-regexp",
+                ".*",
+                "--feedback-regexp",
+                ".*",
+                "--github-organization",
+                "org",
+                "--github-repository-prefix",
+                "prefix",
+                "--transfer-report",
+            ],
+            env={"GITHUB_TOKEN": "fallback_token"},
+        )
+        assert result.exit_code == 0
+        mock.assert_called_once()
+        assert mock.call_args[0][0] == "fallback_token"
+
+
+def test_transport_with_custom_token_env() -> None:
+    """Test transfer with custom --github-token-env var name."""
+    runner = CliRunner()
+    with patch("cellveyor.main.transfer.transfer_reports_to_github") as mock:
+        result = runner.invoke(
+            main.cli,
+            [
+                "--spreadsheet-directory",
+                "spreadsheets",
+                "--spreadsheet-file",
+                "fake_spreadsheet.xlsx",
+                "--sheet-name",
+                "Main",
+                "--key-attribute",
+                "Student GitHub",
+                "--column-regexp",
+                ".*",
+                "--feedback-regexp",
+                ".*",
+                "--github-token-env",
+                "MY_CUSTOM_TOKEN",
+                "--github-organization",
+                "org",
+                "--github-repository-prefix",
+                "prefix",
+                "--transfer-report",
+            ],
+            env={"MY_CUSTOM_TOKEN": "custom_token_value"},
+        )
+        assert result.exit_code == 0
+        mock.assert_called_once()
+        assert mock.call_args[0][0] == "custom_token_value"
+
+
+def test_transport_default_env_without_flag() -> None:
+    """Test program works without --github-token flag using default env var."""
+    runner = CliRunner()
+    with patch("cellveyor.main.transfer.transfer_reports_to_github") as mock:
+        # no --github-token, no --github-token-env, but CELLVEYOR set
+        result = runner.invoke(
+            main.cli,
+            [
+                "--spreadsheet-directory",
+                "spreadsheets",
+                "--spreadsheet-file",
+                "fake_spreadsheet.xlsx",
+                "--sheet-name",
+                "Main",
+                "--key-attribute",
+                "Student GitHub",
+                "--column-regexp",
+                ".*",
+                "--feedback-regexp",
+                ".*",
+                "--github-organization",
+                "org",
+                "--github-repository-prefix",
+                "prefix",
+                "--transfer-report",
+            ],
+            env={"CELLVEYOR_GITHUB_TOKEN": "default_env_token"},
+        )
+        assert result.exit_code == 0
+        mock.assert_called_once()
+
+
+def test_transport_direct_with_token_env() -> None:
+    """Test direct call with github_token_env resolves correctly."""
+    fake_df = pd.DataFrame({"Student GitHub": ["alice"], "Grade": [90]})
+    fake_dict = {"Main": fake_df}
+    selected = fake_df[["Grade"]]
+    result_df = fake_df
+    with (
+        patch(
+            "cellveyor.main.filesystem.confirm_valid_file_in_directory",
+            return_value=True,
+        ),
+        patch(
+            "cellveyor.main.filesystem.read_feedback_files", return_value={}
+        ),
+        patch("cellveyor.main.data.access_dataframes", return_value=fake_dict),
+        patch(
+            "cellveyor.main.data.key_attribute_column_filter",
+            return_value=(selected, result_df),
+        ),
+        patch(
+            "cellveyor.main.report.create_per_key_report",
+            return_value={"alice": "report"},
+        ),
+        patch("cellveyor.main.display_reports"),
+        patch("cellveyor.main.transfer.transfer_reports_to_github") as mock,
+        patch.dict("os.environ", {"MY_VAR": "direct_token"}, clear=False),
+    ):
+        main.transport(
+            spreadsheet_directory=pathlib.Path("spreadsheets"),
+            spreadsheet_file=pathlib.Path("fake_spreadsheet.xlsx"),
+            sheet_name="Main",
+            key_attribute="Student GitHub",
+            column_regexp=".*",
+            feedback_regexp=".*",
+            key_value=None,  # type: ignore
+            feedback_file=None,  # type: ignore
+            github_token_env="MY_VAR",
+            github_organization="org",
+            github_repository_prefix="prefix",
+            transfer_report=True,
+        )
+        mock.assert_called_once()
+        assert mock.call_args[0][0] == "direct_token"
