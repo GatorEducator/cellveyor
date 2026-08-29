@@ -93,7 +93,7 @@ titled with the student's key value.
 |---|---|---|
 | `--key-value` / `-v` | Only produce a report for this value of the key attribute | all rows |
 | `--feedback-file` / `-f` | Feedback file(s) in YAML format (repeatable) | none |
-| `--github-token` / `-g` | GitHub authorization token for `--transfer-report` | none |
+| `--github-token-env` | Name of env var holding GitHub token for `--transfer-report` (default: `CELLVEYOR_GITHUB_TOKEN`, fallback `GITHUB_TOKEN`; `.env` supported) | `CELLVEYOR_GITHUB_TOKEN` |
 | `--github-organization` / `-o` | GitHub organization that stores the destination repositories | none |
 | `--github-repository-prefix` / `-p` | Prefix shared by the destination repositories | none |
 | `--transfer-report` | Post each report as a comment on the student's GitHub pull request | off |
@@ -131,6 +131,23 @@ uv run cellveyor \
   --feedback-file spreadsheets/feedback.yml
 
 # Reports posted to each student's GitHub pull request
+# Preferred: set token via env var or .env (avoids shell history / `ps` leak)
+# The token is read from CELLVEYOR_GITHUB_TOKEN (fallback GITHUB_TOKEN) via
+# python-dotenv / env. No --github-token flag needed:
+CELLVEYOR_GITHUB_TOKEN="$(gh auth token)" uv run cellveyor \
+  --spreadsheet-directory spreadsheets \
+  --spreadsheet-file fake_spreadsheet.xlsx \
+  --sheet-name Main \
+  --key-attribute "Student GitHub" \
+  --column-regexp "^(Summary Grade|Final Grade) .*$" \
+  --feedback-regexp "Summary Grade 1 - Feedback" \
+  --github-organization <your-organization> \
+  --github-repository-prefix <your-repository-prefix> \
+  --transfer-report
+# To use a custom env var name (e.g., per-course token):
+# CELLVEYOR_580_TOKEN=ghp_xxx uv run cellveyor ... --github-token-env CELLVEYOR_580_TOKEN --transfer-report
+# GITHUB_TOKEN also works as fallback alias for CELLVEYOR_GITHUB_TOKEN
+# Option B — .env file (copy .env.example to .env, set CELLVEYOR_GITHUB_TOKEN, then chmod 600 .env):
 uv run cellveyor \
   --spreadsheet-directory spreadsheets \
   --spreadsheet-file fake_spreadsheet.xlsx \
@@ -138,7 +155,6 @@ uv run cellveyor \
   --key-attribute "Student GitHub" \
   --column-regexp "^(Summary Grade|Final Grade) .*$" \
   --feedback-regexp "Summary Grade 1 - Feedback" \
-  --github-token <your-github-token> \
   --github-organization <your-organization> \
   --github-repository-prefix <your-repository-prefix> \
   --transfer-report
@@ -166,7 +182,7 @@ specific diagnostic and exiting with code `1` when:
 - the spreadsheet directory or file does not exist (it prints which one is missing),
 - the requested sheet is not in the spreadsheet (it lists the available sheets),
 - the key attribute column is not in the sheet (it lists the available columns),
-- `--transfer-report` is given without `--github-token`, `--github-organization`, or `--github-repository-prefix` (it lists the missing options),
+- `--transfer-report` is given without a token (`CELLVEYOR_GITHUB_TOKEN` / `GITHUB_TOKEN` / `--github-token-env`), `--github-organization`, or `--github-repository-prefix` (it lists the missing options),
 - reading the spreadsheet or transferring reports to GitHub fails.
 
 Missing or malformed feedback files are skipped with a yellow warning
@@ -282,6 +298,12 @@ This is useful when the same spreadsheet powers different kinds of reports
 and different feedback files are relevant for different sheets.
 
 ## GitHub transfer
+
+Cellveyor reads `CELLVEYOR_GITHUB_TOKEN` (or `GITHUB_TOKEN` as fallback) from
+the environment or a `.env` file (`python-dotenv`, `chmod 600 .env`, never
+commit). Prefer a fine-grained PAT scoped to your organization with
+`contents:write` + `pull-requests:write`, 7-day expiry. Copy
+`.env.example` to `.env` or run `CELLVEYOR_GITHUB_TOKEN="$(gh auth token)" uv run cellveyor ...`.
 
 With `--transfer-report`, Cellveyor posts each generated report to GitHub
 instead of only displaying it. The destination repository for a student is
