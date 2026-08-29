@@ -69,7 +69,6 @@ dev = [
     "tree-sitter-analyzer[popular]>=0.4.0",
     "cosmic-ray>=8.4.3",
     "isort>=5.12.0,<6.0.0",
-    "pytest-intentional",
 ]
 
 [build-system]
