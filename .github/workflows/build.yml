@@ -11,9 +11,9 @@ env:
 # Focuses on the master branch only
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 # Create one single job
 # This job performs all of the necessary checks
@@ -28,58 +28,58 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.11", "3.13"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         include:
           - os: macos-latest
-            python-version: "3.11"
+            python-version: ["3.11", "3.12", "3.13", "3.14"]
           - os: windows-latest
-            python-version: "3.11"
+            python-version: ["3.11", "3.12", "3.13", "3.14"]
     # Define the workflow steps
     steps:
-    # Checkout the code of the repository
-        - name: Check out Repository Code
-          uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
-        # Setup Python for the current language version
-        - name: Setup Python ${{ matrix.python-version }}
-          if: always()
-          uses: actions/setup-python@v5
-          with:
-            python-version: ${{ matrix.python-version }}
-        # Install uv
-        - name: Install uv
-          if: always()
-          uses: astral-sh/setup-uv@v5
-          with:
-            enable-cache: true
-        # Install dependencies
-        - name: Install dependencies
-          if: always()
-          run: |
-            uv sync --group dev
-        # Run the linters (including the rumdl markdown linter)
-        - name: Run Linters
-          if: always()
-          run: |
-            uv run task lint
-        # Run the type checkers
-        - name: Run Type Checks
-          if: always()
-          run: |
-            uv run task typecheck
-        # Run the program
-        - name: Run program
-          if: always()
-          run: |
-            uv run cellveyor --spreadsheet-directory $PWD/spreadsheets/ --spreadsheet-file $PWD/spreadsheets/fake_spreadsheet.xlsx --sheet-name Main --key-attribute "Student GitHub" --key-value "gkapfham" --column-regexp '^(Summary Grade|Final Grade) .*$' --feedback-regexp "Summary Grade 1 - Feedback" --feedback-file $PWD/spreadsheets/feedback.yml
-        # Run the tests
-        - name: Run Tests
-          if: always()
-          run: |
-            uv run task test
-        # Enforce the coverage threshold (Linux only)
-        - name: Run Coverage Check
-          if: matrix.os == 'ubuntu-latest'
-          run: |
-            uv run task test-coverage
+      # Checkout the code of the repository
+      - name: Check out Repository Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Setup Python for the current language version
+      - name: Setup Python ${{ matrix.python-version }}
+        if: always()
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      # Install uv
+      - name: Install uv
+        if: always()
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      # Install dependencies
+      - name: Install dependencies
+        if: always()
+        run: |
+          uv sync --group dev
+      # Run the linters (including the rumdl markdown linter)
+      - name: Run Linters
+        if: always()
+        run: |
+          uv run task lint
+      # Run the type checkers
+      - name: Run Type Checks
+        if: always()
+        run: |
+          uv run task typecheck
+      # Run the program
+      - name: Run program
+        if: always()
+        run: |
+          uv run cellveyor --spreadsheet-directory $PWD/spreadsheets/ --spreadsheet-file $PWD/spreadsheets/fake_spreadsheet.xlsx --sheet-name Main --key-attribute "Student GitHub" --key-value "gkapfham" --column-regexp '^(Summary Grade|Final Grade) .*$' --feedback-regexp "Summary Grade 1 - Feedback" --feedback-file $PWD/spreadsheets/feedback.yml
+      # Run the tests
+      - name: Run Tests
+        if: always()
+        run: |
+          uv run task test
+      # Enforce the coverage threshold (Linux only)
+      - name: Run Coverage Check
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          uv run task test-coverage
