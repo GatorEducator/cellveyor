@@ -166,7 +166,7 @@ ignore-missing-imports = ["*"]
 project = "cellveyor"
 scripts = "scripts"
 tests = "tests"
-directtestedfailunder = "75"
+directtestedfailunder = "100"
 ruff-check-command = { var = "ruff check {project} {tests} {scripts}", recursive = true }
 ruff-fixformat-command = { var = "ruff format {project} {tests} {scripts}", recursive = true }
 ruff-format-command = { var = "ruff format --check {project} {tests} {scripts}", recursive = true }
