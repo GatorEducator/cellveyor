@@ -146,7 +146,7 @@ All Python code must follow these standards:
 ## Privacy & Security (FERPA / Tokens)
 
 - Real gradebooks under `/home/gkapfham/working/data/` and any `CMPSC-*-Gradebook.xlsx` contain FERPA-protected student data. Never commit them, never copy them into `spreadsheets/` or `tests/`, and never paste full rows, emails, or grades into logs, issues, or chat. Use `spreadsheets/fake_spreadsheet.xlsx` for all examples and tests; use `tmp_path` for synthetic sheets.
-- Never log or echo a GitHub token. The `transport` command takes `--github-token`; tests must mock `PyGithub` (`tests/test_transfer.py` pattern) and never assert the literal token string. When reproducing a transfer failure, use `TOKEN` or `fake_token` as the placeholder.
+- Never log or echo a GitHub token. The `transport` command reads `CELLVEYOR_GITHUB_TOKEN` (fallback `GITHUB_TOKEN`) from env/`.env` (`python-dotenv`, `load_dotenv()` in `main.py`, `chmod 600 .env`, never commit) or from the var named by `--github-token-env` (default `CELLVEYOR_GITHUB_TOKEN`). The CLI never takes a raw token value (`--github-token` was removed). `uv run cellveyor --help` documents `--github-token-env`. Tests must mock `PyGithub` (`tests/test_transfer.py` pattern) and never assert the literal token string. When reproducing a transfer failure, use `TOKEN` or `fake_token` as the placeholder.
 - When inspecting a real gradebook locally, read only the schema (`df.columns.tolist()`, `df.shape`) or a single anonymized row; avoid dumping `df.to_dict()` for all students.
 
 ## Testing Requirements
@@ -182,7 +182,7 @@ All tests must follow these standards:
 
 Cellveyor has a strict UX contract for CLI output that agents must preserve:
 
-- **Blocking errors** (exit 1, red): missing directory/file, sheet/key not found, invalid regex, missing GitHub args with `--transfer-report`, spreadsheet read or GitHub transfer failure. Use `console.print(..., style="red")` with `:person_shrugging:` prefix and a dash list via `_print_dash_list` for available sheets/columns or missing options, followed by a hint line. Example: `Key attribute 'X' not found` + `Available columns:` + `Hint: check --key-attribute…`.
+- **Blocking errors** (exit 1, red): missing directory/file, sheet/key not found, invalid regex, missing GitHub args with `--transfer-report` (`--github-token-env` / `CELLVEYOR_GITHUB_TOKEN` / `GITHUB_TOKEN`), spreadsheet read or GitHub transfer failure. Use `console.print(..., style="red")` with `:person_shrugging:` prefix and a dash list via `_print_dash_list` for available sheets/columns or missing options, followed by a hint line. Example: `Key attribute 'X' not found` + `Available columns:` + `Hint: check --key-attribute…`.
 - **Warnings** (exit 0, yellow): no columns matched, no rows after filtering, no reports generated, malformed or missing feedback files skipped. Use `style="yellow"` with `:warning:` and continue; never promote a warning to exit 1.
 - **Exit codes:** `0` for success or warning-only runs; `1` for any blocking error. Keep this invariant when adding new validation for `--feedback-regexp` or other options.
 - Test assertions for this output must remain ANSI-tolerant (see next section).
