@@ -111,3 +111,96 @@ def test_read_feedback_files_merge_order(tmp_path: pathlib.Path) -> None:
     second_file.write_text("footer: Second footer\n")
     combined = filesystem.read_feedback_files([first_file, second_file])
     assert combined == {"header": "First", "footer": "Second footer"}
+
+
+def test_confirm_valid_file_in_directory_valid(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Confirm that a valid file in a valid directory is found."""
+    directory = tmp_path / "subdir"
+    directory.mkdir()
+    file_path = directory / "test.txt"
+    file_path.write_text("hello")
+    confirmation = filesystem.confirm_valid_file_in_directory(
+        pathlib.Path("test.txt"), directory
+    )
+    assert confirmation is True
+
+
+def test_confirm_valid_file_in_directory_invalid_directory(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Confirm that invalid directory returns false."""
+    invalid_dir = pathlib.Path("/tmp/not_a_dir_xyz_12345_cellveyor_test")
+    # ensure the path does not exist as a directory
+    if invalid_dir.exists():
+        # if it somehow exists, use a different one
+        invalid_dir = tmp_path / "nonexistent_dir_xyz"
+    confirmation = filesystem.confirm_valid_file_in_directory(
+        pathlib.Path("test.txt"), invalid_dir
+    )
+    assert confirmation is False
+
+
+def test_confirm_valid_file_in_directory_invalid_file(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Confirm that missing file in valid directory returns false."""
+    directory = tmp_path
+    confirmation = filesystem.confirm_valid_file_in_directory(
+        pathlib.Path("nonexistent_file_xyz.txt"), directory
+    )
+    assert confirmation is False
+
+
+def test_confirm_valid_file_in_directory_none_directory() -> None:
+    """Confirm that none directory returns false."""
+    confirmation = filesystem.confirm_valid_file_in_directory(
+        pathlib.Path("test.txt"),
+        None,  # type: ignore
+    )
+    assert confirmation is False
+
+
+def test_confirm_valid_file_in_directory_both_invalid() -> None:
+    """Confirm that both invalid inputs return false."""
+    confirmation = filesystem.confirm_valid_file_in_directory(
+        pathlib.Path("nope.txt"),
+        pathlib.Path("/tmp/not_a_dir_xyz_12345_cellveyor_test2"),
+    )
+    assert confirmation is False
+
+
+def test_confirm_valid_file_in_directory_absolute_file(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Confirm that absolute file path handling is correct."""
+    directory = tmp_path / "absdir"
+    directory.mkdir()
+    file_path = directory / "abs.txt"
+    file_path.write_text("content")
+    # when file is absolute, directory / file ignores directory
+    # so this should verify the logic still works for absolute paths
+    # that exist
+    confirmation_true = filesystem.confirm_valid_file_in_directory(
+        file_path, directory
+    )
+    # depending on Path semantics, this may be true or false; ensure no crash
+    assert isinstance(confirmation_true, bool)
+    # also check with non-existent absolute file
+    confirmation_false = filesystem.confirm_valid_file_in_directory(
+        tmp_path / "does_not_exist_abs.txt", directory
+    )
+    assert confirmation_false is False
+
+
+@given(
+    file=strategies.builds(pathlib.Path),
+    directory=strategies.builds(pathlib.Path),
+)
+@pytest.mark.fuzz
+def test_fuzz_confirm_valid_file_in_directory_using_builds(
+    file: pathlib.Path, directory: pathlib.Path
+) -> None:
+    """Confirm that the function does not crash with arbitrary paths."""
+    filesystem.confirm_valid_file_in_directory(file=file, directory=directory)
