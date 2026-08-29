@@ -3,7 +3,7 @@ name = "cellveyor"
 version = "0.1.0"
 description = "Generate per-student grade reports from spreadsheet cells and transfer them to GitHub."
 readme = "README.md"
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.12,<3.14"
 authors = [{name = "Gregory M. Kapfhammer", email = "gkapfham@allegheny.edu"}]
 license = "GPL-3.0-only"
 keywords = [
@@ -69,6 +69,7 @@ dev = [
     "tree-sitter-analyzer[popular]>=0.4.0",
     "cosmic-ray>=8.4.3",
     "isort>=5.12.0,<6.0.0",
+    "pytest-intentional",
 ]
 
 [build-system]
@@ -223,3 +224,6 @@ cosmic-ray-init = { cmd = "{cosmic-ray-init-command}", help = "Initialize cosmic
 cosmic-ray-baseline = { cmd = "{cosmic-ray-baseline-command}", help = "Run cosmic-ray baseline tests", use_vars = true }
 cosmic-ray-exec = { cmd = "{cosmic-ray-exec-command}", help = "Execute cosmic-ray mutation testing", use_vars = true }
 cosmic-ray-report = { cmd = "{cosmic-ray-report-command}", help = "Generate cosmic-ray mutation testing report (JSON)", use_vars = true }
+
+[tool.uv.sources]
+pytest-intentional = { path = "/home/gkapfham/working/source/pytest-intentional", editable = true }
