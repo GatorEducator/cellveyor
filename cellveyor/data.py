@@ -37,6 +37,11 @@ def key_attribute_column_filter(
         raise ValueError(
             f"Invalid column regular expression '{column_regexp}': {exc}"
         ) from exc
+    # avoid duplicate key column when regexp matches the key itself
+    # (e.g., ".*" or "Student.*") — otherwise row[key] returns a Series
+    selected_columns = selected_columns.drop(
+        columns=[key_attribute_name], errors="ignore"
+    )
     # extract the attribute that has the key name and also select all of
     # those columns that matched the regular expression
     result_df = sheet_dataframe[
