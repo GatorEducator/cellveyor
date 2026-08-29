@@ -4,6 +4,9 @@ import pathlib
 import re
 from unittest.mock import patch
 
+import pandas as pd
+import pytest
+import typer
 from typer.testing import CliRunner
 
 from cellveyor import main
@@ -488,3 +491,330 @@ def test_transport_report_creation_error() -> None:
         )
     assert result.exit_code == 1
     assert "Failed to create reports" in _strip_ansi(result.output)
+
+
+def test_transport_direct_success() -> None:
+    """Test direct call to transport succeeds with mocked dependencies."""
+    # create minimal dataframe and mock all internal calls
+    fake_df = pd.DataFrame({"Student GitHub": ["alice"], "Grade": [90]})
+    fake_dict = {"Main": fake_df}
+    selected = fake_df[["Grade"]]
+    result_df = fake_df
+    with (
+        patch(
+            "cellveyor.main.filesystem.confirm_valid_file_in_directory",
+            return_value=True,
+        ),
+        patch(
+            "cellveyor.main.filesystem.read_feedback_files", return_value={}
+        ),
+        patch(
+            "cellveyor.main.filesystem.confirm_valid_file", return_value=True
+        ),
+        patch("cellveyor.main.data.access_dataframes", return_value=fake_dict),
+        patch(
+            "cellveyor.main.data.key_attribute_column_filter",
+            return_value=(selected, result_df),
+        ),
+        patch(
+            "cellveyor.main.report.create_per_key_report",
+            return_value={"alice": "report"},
+        ),
+        patch("cellveyor.main.display_reports"),
+    ):
+        # direct call should not raise
+        main.transport(
+            spreadsheet_directory=pathlib.Path("spreadsheets"),
+            spreadsheet_file=pathlib.Path("fake_spreadsheet.xlsx"),
+            sheet_name="Main",
+            key_attribute="Student GitHub",
+            column_regexp=".*",
+            feedback_regexp=".*",
+            key_value=None,  # type: ignore
+            feedback_file=None,  # type: ignore
+            github_token=None,  # type: ignore
+            github_organization=None,  # type: ignore
+            github_repository_prefix=None,  # type: ignore
+            transfer_report=False,
+        )
+
+
+def test_transport_direct_invalid_directory() -> None:
+    """Test direct call to transport with invalid directory exits."""
+    with pytest.raises(typer.Exit) as exc:
+        main.transport(
+            spreadsheet_directory=pathlib.Path("/tmp/not_a_dir_xyz_12345"),
+            spreadsheet_file=pathlib.Path("fake.xlsx"),
+            sheet_name="Main",
+            key_attribute="Student GitHub",
+            column_regexp=".*",
+            feedback_regexp=".*",
+            key_value=None,  # type: ignore
+            feedback_file=None,  # type: ignore
+            github_token=None,  # type: ignore
+            github_organization=None,  # type: ignore
+            github_repository_prefix=None,  # type: ignore
+            transfer_report=False,
+        )
+    assert exc.value.exit_code == 1
+
+
+def test_transport_direct_invalid_file_in_valid_directory(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Test direct call with valid directory but missing file exits."""
+    with pytest.raises(typer.Exit) as exc:
+        main.transport(
+            spreadsheet_directory=tmp_path,
+            spreadsheet_file=pathlib.Path("nonexistent.xlsx"),
+            sheet_name="Main",
+            key_attribute="Student GitHub",
+            column_regexp=".*",
+            feedback_regexp=".*",
+            key_value=None,  # type: ignore
+            feedback_file=None,  # type: ignore
+            github_token=None,  # type: ignore
+            github_organization=None,  # type: ignore
+            github_repository_prefix=None,  # type: ignore
+            transfer_report=False,
+        )
+    assert exc.value.exit_code == 1
+
+
+def test_transport_direct_wrong_sheet() -> None:
+    """Test direct call with wrong sheet triggers exit."""
+    fake_df = pd.DataFrame({"Student GitHub": ["alice"], "Grade": [90]})
+    fake_dict = {"Main": fake_df}
+    with (
+        patch(
+            "cellveyor.main.filesystem.confirm_valid_file_in_directory",
+            return_value=True,
+        ),
+        patch(
+            "cellveyor.main.filesystem.read_feedback_files", return_value={}
+        ),
+        patch("cellveyor.main.data.access_dataframes", return_value=fake_dict),
+    ):
+        with pytest.raises(typer.Exit) as exc:
+            main.transport(
+                spreadsheet_directory=pathlib.Path("spreadsheets"),
+                spreadsheet_file=pathlib.Path("fake_spreadsheet.xlsx"),
+                sheet_name="NOTASHEET",
+                key_attribute="Student GitHub",
+                column_regexp=".*",
+                feedback_regexp=".*",
+                key_value=None,  # type: ignore
+                feedback_file=None,  # type: ignore
+                github_token=None,  # type: ignore
+                github_organization=None,  # type: ignore
+                github_repository_prefix=None,  # type: ignore
+                transfer_report=False,
+            )
+        assert exc.value.exit_code == 1
+
+
+def test_transport_direct_wrong_key_attribute() -> None:
+    """Test direct call with wrong key attribute triggers exit."""
+    fake_df = pd.DataFrame({"Student GitHub": ["alice"], "Grade": [90]})
+    fake_dict = {"Main": fake_df}
+    with (
+        patch(
+            "cellveyor.main.filesystem.confirm_valid_file_in_directory",
+            return_value=True,
+        ),
+        patch(
+            "cellveyor.main.filesystem.read_feedback_files", return_value={}
+        ),
+        patch("cellveyor.main.data.access_dataframes", return_value=fake_dict),
+        patch(
+            "cellveyor.main.data.key_attribute_column_filter",
+            side_effect=ValueError("Key attribute 'BAD' not found"),
+        ),
+    ):
+        with pytest.raises(typer.Exit) as exc:
+            main.transport(
+                spreadsheet_directory=pathlib.Path("spreadsheets"),
+                spreadsheet_file=pathlib.Path("fake_spreadsheet.xlsx"),
+                sheet_name="Main",
+                key_attribute="BAD",
+                column_regexp=".*",
+                feedback_regexp=".*",
+                key_value=None,  # type: ignore
+                feedback_file=None,  # type: ignore
+                github_token=None,  # type: ignore
+                github_organization=None,  # type: ignore
+                github_repository_prefix=None,  # type: ignore
+                transfer_report=False,
+            )
+        assert exc.value.exit_code == 1
+
+
+def test_transport_direct_with_feedback_missing_file() -> None:
+    """Test direct call warns about missing feedback file but succeeds."""
+    fake_df = pd.DataFrame({"Student GitHub": ["alice"], "Grade": [90]})
+    fake_dict = {"Main": fake_df}
+    selected = fake_df[["Grade"]]
+    result_df = fake_df
+    with (
+        patch(
+            "cellveyor.main.filesystem.confirm_valid_file_in_directory",
+            return_value=True,
+        ),
+        patch(
+            "cellveyor.main.filesystem.confirm_valid_file", return_value=False
+        ),
+        patch(
+            "cellveyor.main.filesystem.read_feedback_files", return_value={}
+        ),
+        patch("cellveyor.main.data.access_dataframes", return_value=fake_dict),
+        patch(
+            "cellveyor.main.data.key_attribute_column_filter",
+            return_value=(selected, result_df),
+        ),
+        patch(
+            "cellveyor.main.report.create_per_key_report",
+            return_value={"alice": "report"},
+        ),
+        patch("cellveyor.main.display_reports"),
+    ):
+        main.transport(
+            spreadsheet_directory=pathlib.Path("spreadsheets"),
+            spreadsheet_file=pathlib.Path("fake_spreadsheet.xlsx"),
+            sheet_name="Main",
+            key_attribute="Student GitHub",
+            column_regexp=".*",
+            feedback_regexp=".*",
+            key_value=None,  # type: ignore
+            feedback_file=[pathlib.Path("/tmp/notexist.yml")],
+            github_token=None,  # type: ignore
+            github_organization=None,  # type: ignore
+            github_repository_prefix=None,  # type: ignore
+            transfer_report=False,
+        )
+
+
+def test_transport_direct_no_columns_matched() -> None:
+    """Test direct call with no columns matched warns but succeeds."""
+    fake_df = pd.DataFrame({"Student GitHub": ["alice"], "Grade": [90]})
+    fake_dict = {"Main": fake_df}
+    selected = pd.DataFrame()
+    result_df = fake_df
+    with (
+        patch(
+            "cellveyor.main.filesystem.confirm_valid_file_in_directory",
+            return_value=True,
+        ),
+        patch(
+            "cellveyor.main.filesystem.read_feedback_files", return_value={}
+        ),
+        patch("cellveyor.main.data.access_dataframes", return_value=fake_dict),
+        patch(
+            "cellveyor.main.data.key_attribute_column_filter",
+            return_value=(selected, result_df),
+        ),
+        patch(
+            "cellveyor.main.report.create_per_key_report",
+            return_value={"alice": "report"},
+        ),
+        patch("cellveyor.main.display_reports"),
+    ):
+        main.transport(
+            spreadsheet_directory=pathlib.Path("spreadsheets"),
+            spreadsheet_file=pathlib.Path("fake_spreadsheet.xlsx"),
+            sheet_name="Main",
+            key_attribute="Student GitHub",
+            column_regexp="^NONEXISTENT.*$",
+            feedback_regexp=".*",
+            key_value=None,  # type: ignore
+            feedback_file=None,  # type: ignore
+            github_token=None,  # type: ignore
+            github_organization=None,  # type: ignore
+            github_repository_prefix=None,  # type: ignore
+            transfer_report=False,
+        )
+
+
+def test_transport_direct_transfer_with_mock() -> None:
+    """Test direct call with transfer enabled and mocked github."""
+    fake_df = pd.DataFrame({"Student GitHub": ["alice"], "Grade": [90]})
+    fake_dict = {"Main": fake_df}
+    selected = fake_df[["Grade"]]
+    result_df = fake_df
+    with (
+        patch(
+            "cellveyor.main.filesystem.confirm_valid_file_in_directory",
+            return_value=True,
+        ),
+        patch(
+            "cellveyor.main.filesystem.read_feedback_files", return_value={}
+        ),
+        patch("cellveyor.main.data.access_dataframes", return_value=fake_dict),
+        patch(
+            "cellveyor.main.data.key_attribute_column_filter",
+            return_value=(selected, result_df),
+        ),
+        patch(
+            "cellveyor.main.report.create_per_key_report",
+            return_value={"alice": "report"},
+        ),
+        patch("cellveyor.main.display_reports"),
+        patch("cellveyor.main.transfer.transfer_reports_to_github") as mock,
+    ):
+        main.transport(
+            spreadsheet_directory=pathlib.Path("spreadsheets"),
+            spreadsheet_file=pathlib.Path("fake_spreadsheet.xlsx"),
+            sheet_name="Main",
+            key_attribute="Student GitHub",
+            column_regexp=".*",
+            feedback_regexp=".*",
+            key_value=None,  # type: ignore
+            feedback_file=None,  # type: ignore
+            github_token="fake",
+            github_organization="org",
+            github_repository_prefix="prefix",
+            transfer_report=True,
+        )
+        mock.assert_called_once()
+
+
+def test_transport_direct_missing_github_args() -> None:
+    """Test direct call with transfer but missing github args exits."""
+    fake_df = pd.DataFrame({"Student GitHub": ["alice"], "Grade": [90]})
+    fake_dict = {"Main": fake_df}
+    selected = fake_df[["Grade"]]
+    result_df = fake_df
+    with (
+        patch(
+            "cellveyor.main.filesystem.confirm_valid_file_in_directory",
+            return_value=True,
+        ),
+        patch(
+            "cellveyor.main.filesystem.read_feedback_files", return_value={}
+        ),
+        patch("cellveyor.main.data.access_dataframes", return_value=fake_dict),
+        patch(
+            "cellveyor.main.data.key_attribute_column_filter",
+            return_value=(selected, result_df),
+        ),
+        patch(
+            "cellveyor.main.report.create_per_key_report",
+            return_value={"alice": "report"},
+        ),
+        patch("cellveyor.main.display_reports"),
+    ):
+        with pytest.raises(typer.Exit) as exc:
+            main.transport(
+                spreadsheet_directory=pathlib.Path("spreadsheets"),
+                spreadsheet_file=pathlib.Path("fake_spreadsheet.xlsx"),
+                sheet_name="Main",
+                key_attribute="Student GitHub",
+                column_regexp=".*",
+                feedback_regexp=".*",
+                key_value=None,  # type: ignore
+                feedback_file=None,  # type: ignore
+                github_token=None,  # type: ignore
+                github_organization=None,  # type: ignore
+                github_repository_prefix=None,  # type: ignore
+                transfer_report=True,
+            )
+        assert exc.value.exit_code == 1
