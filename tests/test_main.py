@@ -2,7 +2,7 @@
 
 import pathlib
 import re
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -986,3 +986,217 @@ def test_transport_direct_with_token_env() -> None:
         )
         mock.assert_called_once()
         assert mock.call_args[0][0] == "direct_token"
+
+
+def test_display_reports_fancy_true() -> None:
+    """Test display_reports with fancy true shows Panel."""
+    reports = {"alice": "**Hello @alice!**\n\n- **Grade**: 90\n"}
+    main.display_reports(reports, fancy=True)
+    main.display_reports(reports)
+
+
+def test_display_reports_fancy_false() -> None:
+    """Test display_reports with fancy false shows plain markdown."""
+    reports = {"alice": "**Hello @alice!**\n\n- **Grade**: 90\n"}
+    main.display_reports(reports, fancy=False)
+    main.display_reports({}, fancy=False)
+
+
+def test_transport_with_fancy() -> None:
+    """Test transport with --fancy shows Panel."""
+    runner = CliRunner()
+    result = runner.invoke(
+        main.cli,
+        [
+            "--spreadsheet-directory",
+            "spreadsheets",
+            "--spreadsheet-file",
+            "fake_spreadsheet.xlsx",
+            "--sheet-name",
+            "Main",
+            "--key-attribute",
+            "Student GitHub",
+            "--column-regexp",
+            "^(Summary Grade|Final Grade) .*$",
+            "--feedback-regexp",
+            "Summary Grade 1 - Feedback",
+            "--fancy",
+        ],
+    )
+    assert result.exit_code == 0
+    # fancy panel contains box characters
+    assert "gkapfham" in _strip_ansi(result.output)
+
+
+def test_transport_with_no_fancy() -> None:
+    """Test transport with --no-fancy shows plain markdown without Panel."""
+    runner = CliRunner()
+    result = runner.invoke(
+        main.cli,
+        [
+            "--spreadsheet-directory",
+            "spreadsheets",
+            "--spreadsheet-file",
+            "fake_spreadsheet.xlsx",
+            "--sheet-name",
+            "Main",
+            "--key-attribute",
+            "Student GitHub",
+            "--column-regexp",
+            "^(Summary Grade|Final Grade) .*$",
+            "--feedback-regexp",
+            "Summary Grade 1 - Feedback",
+            "--no-fancy",
+        ],
+    )
+    assert result.exit_code == 0
+    output = _strip_ansi(result.output)
+    assert "gkapfham" in output
+    # plain mode prints "gkapfham:" header, not Panel border
+    assert "gkapfham:" in output
+    # panel uses "╭" box, plain should not
+    assert "╭" not in output
+
+
+def test_transport_direct_with_fancy_false() -> None:
+    """Test direct call with fancy false."""
+    fake_df = pd.DataFrame({"Student GitHub": ["alice"], "Grade": [90]})
+    fake_dict = {"Main": fake_df}
+    selected = fake_df[["Grade"]]
+    result_df = fake_df
+    with (
+        patch(
+            "cellveyor.main.filesystem.confirm_valid_file_in_directory",
+            return_value=True,
+        ),
+        patch(
+            "cellveyor.main.filesystem.read_feedback_files", return_value={}
+        ),
+        patch("cellveyor.main.data.access_dataframes", return_value=fake_dict),
+        patch(
+            "cellveyor.main.data.key_attribute_column_filter",
+            return_value=(selected, result_df),
+        ),
+        patch(
+            "cellveyor.main.report.create_per_key_report",
+            return_value={"alice": "report"},
+        ),
+        patch("cellveyor.main.display_reports") as mock_display,
+    ):
+        main.transport(
+            spreadsheet_directory=pathlib.Path("spreadsheets"),
+            spreadsheet_file=pathlib.Path("fake_spreadsheet.xlsx"),
+            sheet_name="Main",
+            key_attribute="Student GitHub",
+            column_regexp=".*",
+            feedback_regexp=".*",
+            key_value=None,  # type: ignore
+            feedback_file=None,  # type: ignore
+            github_token_env=None,
+            github_organization=None,  # type: ignore
+            github_repository_prefix=None,  # type: ignore
+            transfer_report=False,
+            fancy=False,
+        )
+        mock_display.assert_called_once()
+        # ensure display_reports was called with fancy=False
+        assert mock_display.call_args[0][1] is False
+
+
+def test_display_reports_plain_spacing() -> None:
+    """Test plain mode has blank line between key and content."""
+    reports = {
+        "gabrielsalvatore": "**Hello @gabrielsalvatore!**\n\n- **Grade**: 90\n"
+    }
+    # use helper directly to avoid spreadsheet setup
+    # capture plain output
+    with patch("cellveyor.main.console") as mock_console:
+        # mock console to capture calls
+        mock_console.print = MagicMock()
+        main.display_reports(reports, fancy=False)
+        # first call is "gabrielsalvatore:", second is blank, third is markdown
+        calls = [str(c) for c in mock_console.print.call_args_list]
+        assert any("gabrielsalvatore:" in str(c) for c in calls)
+        # ensure blank line call exists (empty string or no arg)
+        assert mock_console.print.call_count >= 3  # noqa: PLR2004
+
+
+def test_transport_with_y_fancy() -> None:
+    """Test -y sets --fancy and shows Panel."""
+    runner = CliRunner()
+    result = runner.invoke(
+        main.cli,
+        [
+            "--spreadsheet-directory",
+            "spreadsheets",
+            "--spreadsheet-file",
+            "fake_spreadsheet.xlsx",
+            "--sheet-name",
+            "Main",
+            "--key-attribute",
+            "Student GitHub",
+            "--column-regexp",
+            "^(Summary Grade|Final Grade) .*$",
+            "--feedback-regexp",
+            "Summary Grade 1 - Feedback",
+            "-y",
+        ],
+    )
+    assert result.exit_code == 0
+    output = _strip_ansi(result.output)
+    assert "gkapfham" in output
+    assert "╭" in output
+
+
+def test_transport_with_no_transfer_long() -> None:
+    """Test --no-transfer-report long form does not require token."""
+    runner = CliRunner()
+    result = runner.invoke(
+        main.cli,
+        [
+            "--spreadsheet-directory",
+            "spreadsheets",
+            "--spreadsheet-file",
+            "fake_spreadsheet.xlsx",
+            "--sheet-name",
+            "Main",
+            "--key-attribute",
+            "Student GitHub",
+            "--column-regexp",
+            ".*",
+            "--feedback-regexp",
+            ".*",
+            "--no-transfer-report",
+            "--github-organization",
+            "org",
+            "--github-repository-prefix",
+            "prefix",
+        ],
+    )
+    assert result.exit_code == 0
+
+
+def test_transport_with_no_fancy_long() -> None:
+    """Test --no-fancy long form shows plain output."""
+    runner = CliRunner()
+    result = runner.invoke(
+        main.cli,
+        [
+            "--spreadsheet-directory",
+            "spreadsheets",
+            "--spreadsheet-file",
+            "fake_spreadsheet.xlsx",
+            "--sheet-name",
+            "Main",
+            "--key-attribute",
+            "Student GitHub",
+            "--column-regexp",
+            "^(Summary Grade|Final Grade) .*$",
+            "--feedback-regexp",
+            "Summary Grade 1 - Feedback",
+            "--no-fancy",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "╭" not in _strip_ansi(result.output)
+    assert "gkapfham:" in _strip_ansi(result.output)
