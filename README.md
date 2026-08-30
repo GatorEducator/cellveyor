@@ -93,10 +93,11 @@ titled with the student's key value.
 |---|---|---|
 | `--key-value` / `-v` | Only produce a report for this value of the key attribute | all rows |
 | `--feedback-file` / `-f` | Feedback file(s) in YAML format (repeatable) | none |
-| `--github-token-env` | Name of env var holding GitHub token for `--transfer-report` (default: `CELLVEYOR_GITHUB_TOKEN`, fallback `GITHUB_TOKEN`; `.env` supported) | `CELLVEYOR_GITHUB_TOKEN` |
+| `--github-token-env` / `-g` | Name of env var holding GitHub token for `--transfer-report` (default: `CELLVEYOR_GITHUB_TOKEN`, fallback `GITHUB_TOKEN`; `.env` supported) | `CELLVEYOR_GITHUB_TOKEN` |
 | `--github-organization` / `-o` | GitHub organization that stores the destination repositories | none |
 | `--github-repository-prefix` / `-p` | Prefix shared by the destination repositories | none |
-| `--transfer-report` | Post each report as a comment on the student's GitHub pull request | off |
+| `--transfer-report` / `-t` | Post each report as a comment on the student's GitHub pull request (`--no-transfer-report` to disable) | off |
+| `--fancy` / `-y` | Display reports with rich Panel (`--no-fancy` for plain markdown for copying) | on |
 
 **Examples:**
 
