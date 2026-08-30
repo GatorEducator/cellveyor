@@ -37,10 +37,18 @@ def _print_dash_list(title: str, items: List[str], color: str = "red") -> None:
     console.print()
 
 
-def display_reports(reports_dict: Dict[str, str]) -> None:
+def display_reports(reports_dict: Dict[str, str], fancy: bool = True) -> None:
     """Display all of the reports in the reports dictionary."""
     # iterate through all of the keys
     for current_report_key, current_report in reports_dict.items():
+        # when fancy is false, print plain markdown for copying;
+        # when fancy is true, wrap in rich panel with title
+        if not fancy:
+            console.print(f"{current_report_key}:")
+            console.print()
+            console.print(Markdown(current_report))
+            console.print()
+            continue
         # display the report inside of a rich panel, using
         # a markdown-based formatter for the report's contents;
         # note that use of console.print must occur in two
@@ -128,8 +136,19 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
         "-t",
         help="Transfer a report to GitHub",
     ),
+    fancy: bool = typer.Option(
+        True,
+        "--fancy/--no-fancy",
+        "-y",
+        help="Display reports with rich Panel (default: fancy); use --no-fancy for plain markdown for copying",
+    ),
 ) -> None:
     """Generate per-student grade reports from spreadsheet cells and optionally transfer them to GitHub."""
+    # handle direct calls where typer defaults are OptionInfo
+    if type(transfer_report).__name__ == "OptionInfo":  # type: ignore[unreachable]
+        transfer_report = False  # type: ignore[assignment]
+    if type(fancy).__name__ == "OptionInfo":  # type: ignore[unreachable]
+        fancy = True  # type: ignore[assignment]
     # resolve GitHub token from env var name (default CELLVEYOR_GITHUB_TOKEN, fallback GITHUB_TOKEN)
     # handle direct calls where typer default is OptionInfo (type checker sees str, so use name check)
     if (
@@ -304,7 +323,7 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
         )
         console.print()
     # display the generated reports
-    display_reports(per_key_report)
+    display_reports(per_key_report, fancy)
     # if the --transfer flag was enabled then this means
     # that the generated reports should be uploaded to GitHub
     # as a comment inside of the standard pull request
