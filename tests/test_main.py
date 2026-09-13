@@ -234,6 +234,36 @@ def test_transport_missing_github_args() -> None:
     assert "Missing required GitHub" in _strip_ansi(result.output)
 
 
+def test_transport_missing_some_github_args() -> None:
+    """Test --transfer-report with only some github args exits 1."""
+    runner = CliRunner()
+    result = runner.invoke(
+        main.cli,
+        [
+            "--spreadsheet-directory",
+            "spreadsheets",
+            "--spreadsheet-file",
+            "fake_spreadsheet.xlsx",
+            "--sheet-name",
+            "Main",
+            "--key-attribute",
+            "Student GitHub",
+            "--column-regexp",
+            ".*",
+            "--feedback-regexp",
+            ".*",
+            "--github-organization",
+            "org",
+            "--transfer-report",
+        ],
+        env={"CELLVEYOR_GITHUB_TOKEN": "fake"},
+    )
+    assert result.exit_code == 1
+    output = _strip_ansi(result.output)
+    assert "Missing required GitHub" in output
+    assert "--github-repository-prefix" in output
+
+
 def test_transport_with_feedback_missing_file() -> None:
     """Test transport with missing feedback file warns."""
     runner = CliRunner()
