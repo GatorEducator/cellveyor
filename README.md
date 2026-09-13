@@ -1,5 +1,5 @@
 <div align="center">
-  <img alt="Formtuist logo" src="https://raw.githubusercontent.com/GatorEducator/cellveyor/master/.github/images/Cellveyor-Logo.png" width="90%">
+  <img alt="Cellveyor logo" src="https://raw.githubusercontent.com/GatorEducator/cellveyor/master/.github/images/Cellveyor-Logo.png" width="90%">
 </div>
 
 # Cellveyor
