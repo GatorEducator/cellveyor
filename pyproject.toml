@@ -96,6 +96,7 @@ exclude = [
 [tool.pytest.ini_options]
 filterwarnings = [
     "error",
+    "ignore::DeprecationWarning",
 ]
 markers = [
     "propertybased: property-based tests using hypothesis",
@@ -189,7 +190,7 @@ cosmic-ray-report-command = "cosmic-ray dump cosmic-ray.sqlite"
 cosmic-ray-baseline-command = "cosmic-ray baseline cosmic-ray.toml"
 
 [tool.taskipy.tasks]
-all = "task check && task test && task test-coverage-check"
+all = "task check && task test && task test-coverage && task test-coverage-check"
 check = "task lint && task typecheck"
 lint = "task ruff-format && task ruff-check && task comments-check && task vsc && task rumdl-check"
 typecheck = "task mypy && task ty && task pyrefly && task zuban && task symbex"
@@ -214,7 +215,7 @@ test-coverage-check = { cmd = "uv run python -m scripts.tsc --threshold {directt
 test-coverage-check-verbose = { cmd = "uv run python -m scripts.tsc --threshold {directtestedfailunder} --verbose", help = "Check function coverage with detailed analysis output", use_vars = true }
 test = { cmd = "pytest -x -s -vv -n auto", help = "Run the pytest test suite using order randomization and test distribution" }
 test-not-randomly = { cmd = "pytest -x -s -vv -p no:randomly", help = "Run the pytest test suite without order randomization" }
-test-not-xdist = { cmd = "pytest -x -s -vv -p no:xdist", help = "Run the pytest test suite without order randomization" }
+test-not-xdist = { cmd = "pytest -x -s -vv -p no:xdist", help = "Run the pytest test suite without test distribution" }
 test-silent = { cmd = "pytest -x --show-capture=no -n auto", help = "Run the pytest test suite without showing output" }
 test-silent-not-randomly = { cmd = "pytest -x --show-capture=no -p no:randomly", help = "Run the pytest test suite without showing output and order randomization" }
 test-silent-not-xdist = { cmd = "pytest -x --show-capture=no -p no:xdist", help = "Run the pytest test suite without showing output and test distribution" }
