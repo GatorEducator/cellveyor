@@ -320,6 +320,23 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
             feedback_regexp,
             combined_feedback_dict,
         )
+    except ValueError as exc:
+        console.print(f":person_shrugging: {exc}", style="red")
+        console.print()
+        # show available columns for feedback pattern errors
+        if "feedback" in str(exc).lower():
+            _print_dash_list(
+                "Available columns",
+                list(map(str, selected_columns.columns.tolist())),
+                color="red",
+            )
+            # provide a reminder that there was likely an invalid
+            # regular expression provided for the feedback pattern
+            console.print(
+                "  Make --feedback-regexp a valid regular expression",
+                style="red",
+            )
+        raise typer.Exit(code=1)
     except Exception as exc:
         console.print(
             f":person_shrugging: Failed to create reports: {exc}", style="red"
