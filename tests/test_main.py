@@ -1054,8 +1054,9 @@ def test_transport_with_no_fancy() -> None:
     assert "gkapfham" in output
     # plain mode prints "gkapfham:" header, not Panel border
     assert "gkapfham:" in output
-    # panel uses "╭" box, plain should not
+    # plain output has no panel border on any platform
     assert "╭" not in output
+    assert "┌" not in output
 
 
 def test_transport_direct_with_fancy_false() -> None:
@@ -1145,7 +1146,39 @@ def test_transport_with_y_fancy() -> None:
     assert result.exit_code == 0
     output = _strip_ansi(result.output)
     assert "gkapfham" in output
-    assert "╭" in output
+    # fancy panel uses a rounded box, accepting the square
+    # fallback for legacy windows consoles for portability
+    assert "╭" in output or "┌" in output
+
+
+def test_transport_no_fancy_panel_off() -> None:
+    """Test same report args as fancy flag but with boxes off."""
+    runner = CliRunner()
+    result = runner.invoke(
+        main.cli,
+        [
+            "--spreadsheet-directory",
+            "spreadsheets",
+            "--spreadsheet-file",
+            "fake_spreadsheet.xlsx",
+            "--sheet-name",
+            "Main",
+            "--key-attribute",
+            "Student GitHub",
+            "--column-regexp",
+            "^(Summary Grade|Final Grade) .*$",
+            "--feedback-regexp",
+            "Summary Grade 1 - Feedback",
+            "--no-fancy",
+        ],
+    )
+    assert result.exit_code == 0
+    output = _strip_ansi(result.output)
+    assert "gkapfham" in output
+    assert "gkapfham:" in output
+    # plain output has no panel border on any platform
+    assert "╭" not in output
+    assert "┌" not in output
 
 
 def test_transport_with_no_transfer_long() -> None:
@@ -1198,5 +1231,8 @@ def test_transport_with_no_fancy_long() -> None:
         ],
     )
     assert result.exit_code == 0
-    assert "╭" not in _strip_ansi(result.output)
-    assert "gkapfham:" in _strip_ansi(result.output)
+    output = _strip_ansi(result.output)
+    assert "gkapfham:" in output
+    # plain output has no panel border on any platform
+    assert "╭" not in output
+    assert "┌" not in output
