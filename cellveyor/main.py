@@ -6,6 +6,7 @@ from typing import Dict, List
 
 import typer
 from dotenv import load_dotenv
+from rich import box
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -52,12 +53,20 @@ def display_reports(reports_dict: Dict[str, str], fancy: bool = True) -> None:
         # display the report inside of a rich panel, using
         # a markdown-based formatter for the report's contents;
         # note that use of console.print must occur in two
-        # stages when displaying markdown-based content in a Panel
+        # stages when displaying markdown-based content in a Panel;
+        # use an explicit rounded box without safe substitution so
+        # the border renders identically on Windows, MacOS, and Linux
+        # (note that we require cellveyor to support all three of
+        # these major operating systems)
         markdown_current_report = Markdown(current_report)
         console.print(f"{constants.markers.Indent}")
         console.print(
             Panel(
-                markdown_current_report, title=current_report_key, expand=False
+                markdown_current_report,
+                box=box.ROUNDED,
+                title=current_report_key,
+                expand=False,
+                safe_box=False,
             )
         )
 
