@@ -1,5 +1,6 @@
-<img src="https://github.com/GatorEducator/cellveyor/blob/master/.github/images/cellveyor-logo.svg" alt="Cellveyor Logo"
-title="Cellveyor Logo" />
+<div align="center">
+  <img alt="Formtuist logo" src="https://raw.githubusercontent.com/GatorEducator/cellveyor/master/.github/images/Cellveyor-Logo.png" width="90%">
+</div>
 
 # Cellveyor
 
@@ -26,18 +27,31 @@ no report.
 
 ## Installation
 
+Run the latest release without installing anything:
+
+```bash
+uvx cellveyor --help
+```
+
+Or install it so `cellveyor` stays on your `PATH`:
+
+```bash
+uv tool install cellveyor
+```
+
+To work on the code itself, clone the repository and run it with
+`uv run`, which uses the local checkout instead of the release:
+
 ```bash
 git clone git@github.com:GatorEducator/cellveyor.git
 cd cellveyor
 uv run cellveyor --help
 ```
 
-The first `uv run` resolves the dependencies. Later runs start fast.
-
 ## Usage
 
 ```bash
-uv run cellveyor \
+cellveyor \
   --spreadsheet-directory spreadsheets \
   --spreadsheet-file fake_spreadsheet.xlsx \
   --sheet-name Main \
@@ -49,7 +63,7 @@ uv run cellveyor \
 Use `--key-value` for a single student:
 
 ```bash
-uv run cellveyor \
+cellveyor \
   --spreadsheet-directory spreadsheets \
   --spreadsheet-file fake_spreadsheet.xlsx \
   --sheet-name Main \
@@ -105,7 +119,7 @@ subset of keys: a shared file might define only the `footer` while
 each assignment gets its own file with a `header` and feedback:
 
 ```bash
-uv run cellveyor ... \
+cellveyor ... \
   --feedback-file feedback/shared.yml \
   --feedback-file feedback/assignment-one.yml
 ```
@@ -119,7 +133,7 @@ Transfers need a token, an organization, and a repository prefix. The
 token comes from the environment, never from a flag:
 
 ```bash
-CELLVEYOR_GITHUB_TOKEN="$(gh auth token)" uv run cellveyor \
+CELLVEYOR_GITHUB_TOKEN="$(gh auth token)" cellveyor \
   --spreadsheet-directory spreadsheets \
   --spreadsheet-file fake_spreadsheet.xlsx \
   --sheet-name Main \
@@ -147,6 +161,8 @@ the pull request GitHub Classroom opens per student repository.
 | `spreadsheets/feedback.yml` | Sample feedback file |
 
 ## Development
+
+Clone the repository, then:
 
 ```bash
 uv run task all
