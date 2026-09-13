@@ -3,9 +3,15 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-from github import GithubException
+from github import (
+    BadCredentialsException,
+    GithubException,
+    UnknownObjectException,
+)
 
 from cellveyor import transfer
+
+EXPECTED_GITHUB_REPO_CALLS = 2
 
 
 def test_create_fully_qualified_github_repository() -> None:
@@ -172,6 +178,45 @@ def test_transfer_report_to_github_repo_without_separators() -> None:
         transfer.transfer_report_to_github("token", "bad-repo-name", "report")
         mock_repo.get_pull.assert_called_once_with(1)
         mock_pull.create_issue_comment.assert_called_once_with("report")
+
+
+def test_transfer_reports_to_github_handles_auth_and_missing_repo() -> None:
+    """Test per-repo loop survives bad credentials and unknown repos."""
+    with patch("cellveyor.transfer.Github") as mock_github:
+        mock_github.return_value.get_repo.side_effect = [
+            BadCredentialsException(401, "Bad credentials"),
+            UnknownObjectException(404, "Not Found"),
+        ]
+        # should not raise; each failure is reported and skipped
+        transfer.transfer_reports_to_github(
+            "fake_token", "org", "prefix", {"alice": "a", "bob": "b"}
+        )
+        assert (
+            mock_github.return_value.get_repo.call_count
+            == EXPECTED_GITHUB_REPO_CALLS
+        )
+
+
+def test_transfer_report_to_github_reraises_auth_and_missing() -> None:
+    """Test bad credentials and unknown repos surface as GithubException."""
+    with (
+        patch("cellveyor.transfer.Github") as mock_github,
+        patch("cellveyor.transfer.Auth"),
+    ):
+        mock_github.return_value.get_repo.side_effect = (
+            BadCredentialsException(401, "Bad credentials")
+        )
+        with pytest.raises(GithubException):
+            transfer.transfer_report_to_github(
+                "token", "org/prefix-user", "report"
+            )
+        mock_github.return_value.get_repo.side_effect = UnknownObjectException(
+            404, "Not Found"
+        )
+        with pytest.raises(GithubException):
+            transfer.transfer_report_to_github(
+                "token", "org/prefix-user", "report"
+            )
 
 
 def test_transfer_report_to_github_raises_github_exception() -> None:
