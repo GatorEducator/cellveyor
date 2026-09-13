@@ -1,5 +1,6 @@
 """Pytest test suite for the main module."""
 
+import io
 import pathlib
 import re
 from unittest.mock import MagicMock, patch
@@ -7,6 +8,7 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 import typer
+from rich.console import Console
 from typer.testing import CliRunner
 
 from cellveyor import main
@@ -1179,6 +1181,19 @@ def test_transport_no_fancy_panel_off() -> None:
     # plain output has no panel border on any platform
     assert "╭" not in output
     assert "┌" not in output
+
+
+def test_display_reports_fancy_legacy_windows() -> None:
+    """Test fancy panel stays rounded on legacy windows consoles."""
+    reports = {"gkapfham": "**Hello @gkapfham!**\n\n- **Grade**: 90\n"}
+    buffer = io.StringIO()
+    legacy_console = Console(file=buffer, legacy_windows=True, width=100)
+    with patch("cellveyor.main.console", legacy_console):
+        main.display_reports(reports, fancy=True)
+    output = buffer.getvalue()
+    assert "gkapfham" in output
+    # rounded box must survive legacy windows substitution
+    assert "╭" in output
 
 
 def test_transport_with_no_transfer_long() -> None:
