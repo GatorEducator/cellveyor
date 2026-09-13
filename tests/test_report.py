@@ -1,6 +1,7 @@
 """Pytest test suite for the report module."""
 
 import pandas
+import pytest
 from hypothesis import given, strategies
 
 from cellveyor import report
@@ -102,6 +103,47 @@ def test_create_per_key_report_empty_feedback_regexp() -> None:
     )
     assert "alice" in reports
     assert "alice" in reports
+
+
+def test_create_per_key_report_invalid_feedback_regexp() -> None:
+    """Test create_per_key_report rejects an invalid feedback pattern."""
+    df = pandas.DataFrame({"Student GitHub": ["alice"], "Grade": [90]})
+    selected = df[["Grade"]]
+    result_df = df[["Student GitHub", "Grade"]]
+    with pytest.raises(
+        ValueError, match="Invalid feedback regular expression"
+    ):
+        report.create_per_key_report(
+            "Student GitHub", result_df, selected, "[unclosed", {}
+        )
+
+
+def test_create_per_key_report_empty_string_feedback_regexp() -> None:
+    """Test create_per_key_report treats empty pattern as no feedback."""
+    df = pandas.DataFrame({"Student GitHub": ["alice"], "Grade": [90]})
+    selected = df[["Grade"]]
+    result_df = df[["Student GitHub", "Grade"]]
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "", {}
+    )
+    assert "alice" in reports
+    assert "Here is some additional feedback" not in reports["alice"]
+
+
+def test_select_feedback_columns_invalid_pattern() -> None:
+    """Test select_feedback_columns rejects an invalid pattern."""
+    df = pandas.DataFrame({"Grade": [90]})
+    with pytest.raises(
+        ValueError, match="Invalid feedback regular expression"
+    ):
+        report.select_feedback_columns(df, "[unclosed")
+
+
+def test_select_feedback_columns_empty_pattern() -> None:
+    """Test select_feedback_columns returns no columns for empty pattern."""
+    df = pandas.DataFrame({"Grade": [90], "Feedback": ["x"]})
+    selected = report.select_feedback_columns(df, "")
+    assert len(selected.columns) == 0
 
 
 def test_create_per_key_report_with_nan_key() -> None:

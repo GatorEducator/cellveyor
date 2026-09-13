@@ -209,6 +209,57 @@ def test_transport_invalid_regex() -> None:
     assert result.exit_code == 1
 
 
+def test_transport_invalid_feedback_regexp() -> None:
+    """Test transport with invalid feedback regexp exits 1 with hint."""
+    runner = CliRunner()
+    result = runner.invoke(
+        main.cli,
+        [
+            "--spreadsheet-directory",
+            "spreadsheets",
+            "--spreadsheet-file",
+            "fake_spreadsheet.xlsx",
+            "--sheet-name",
+            "Main",
+            "--key-attribute",
+            "Student GitHub",
+            "--column-regexp",
+            "^(Summary Grade|Final Grade) .*$",
+            "--feedback-regexp",
+            "[unclosed",
+        ],
+    )
+    assert result.exit_code == 1
+    output = _strip_ansi(result.output)
+    assert "Invalid feedback regular expression" in output
+    assert "Available columns:" in output
+    assert "--feedback-regexp" in output
+
+
+def test_transport_empty_feedback_regexp() -> None:
+    """Test transport with empty feedback regexp still reports."""
+    runner = CliRunner()
+    result = runner.invoke(
+        main.cli,
+        [
+            "--spreadsheet-directory",
+            "spreadsheets",
+            "--spreadsheet-file",
+            "fake_spreadsheet.xlsx",
+            "--sheet-name",
+            "Main",
+            "--key-attribute",
+            "Student GitHub",
+            "--column-regexp",
+            "^(Summary Grade|Final Grade) .*$",
+            "--feedback-regexp",
+            "",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "gkapfham" in _strip_ansi(result.output)
+
+
 def test_transport_missing_github_args() -> None:
     """Test transport with --transfer-report but missing github args exits 1."""
     runner = CliRunner()
