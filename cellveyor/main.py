@@ -1,4 +1,4 @@
-"""🚚 Cellveyor is a conveyor for the cells in spreadsheets."""
+"""Cellveyor is a conveyor for the cells in spreadsheets."""
 
 import os
 from pathlib import Path
