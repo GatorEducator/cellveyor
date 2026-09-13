@@ -1,6 +1,7 @@
 """Create reports based on content in dataframes."""
 
 import math
+import re
 from typing import Any, Dict, List
 
 from pandas import DataFrame
@@ -69,6 +70,24 @@ def create_feedback_list(feedback_comma_list: str) -> List[str]:
     return feedback_list
 
 
+def select_feedback_columns(
+    selected_columns: DataFrame, feedback_regexp: str
+) -> DataFrame:
+    """Extract feedback columns matching the pattern, if any are requested."""
+    # an empty pattern means that there are no feedback columns to extract
+    if not feedback_regexp:
+        return selected_columns.iloc[:, 0:0]
+    # validate the feedback pattern before filtering so that an invalid
+    # pattern fails with a clear error instead of a raw pandas exception
+    try:
+        re.compile(feedback_regexp)
+    except re.error as exc:
+        raise ValueError(
+            f"Invalid feedback regular expression '{feedback_regexp}': {exc}"
+        ) from exc
+    return selected_columns.filter(regex=feedback_regexp)
+
+
 def create_per_key_report(
     key_attribute: str,
     result_dataframe: DataFrame,
@@ -83,7 +102,9 @@ def create_per_key_report(
     # or upload to a markdown-aware platform like a GitHub issue or pull request
     markdown_reports: Dict[str, str] = {}
     # extract the column(s) that provide extra feedback in a comma-separate list
-    selected_feedback_columns = selected_columns.filter(regex=feedback_regexp)
+    selected_feedback_columns = select_feedback_columns(
+        selected_columns, feedback_regexp
+    )
     selected_columns = selected_columns.drop(selected_feedback_columns, axis=1)  # type: ignore
     # create a unique message for each row in the dataframe
     for index, row in result_dataframe.iterrows():
