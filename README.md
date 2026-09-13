@@ -82,20 +82,36 @@ key column, bad regex, missing GitHub options, or a failed transfer.
 
 ## Feedback files
 
-Feedback files are small YAML files with a `header`, a `footer`, and
-one entry per feedback key:
+Feedback files are small YAML files. Each key holds one block of
+feedback written as a folded scalar. The keys `header` and `footer`
+go at the top and bottom of every report; every other key is used
+only when a row's feedback column names it:
 
 ```yaml
-header: "Thanks for your work this week."
-footer: "Come to office hours with questions."
-goodjob: "Strong work, keep it up."
-tryagain: "Review the feedback and resubmit."
+header: >
+  Thanks for your work this week.
+congratulations: >
+  Strong work, keep it up.
+needsimprovement: >
+  Review the feedback and resubmit.
+footer: >
+  Come to office hours with questions.
 ```
 
-A row's feedback column holds a comma-separated list of keys. Each key
-found in a feedback file becomes one bullet in that student's report.
-Keys that match nothing are skipped. Pass `--feedback-file` more than
-once to merge files; later files win on conflicts.
+A row's feedback column holds a comma-separated list of keys. Each
+key found in a feedback file becomes one bullet in that student's
+report. Keys that match nothing are skipped. A file may hold any
+subset of keys: a shared file might define only the `footer` while
+each assignment gets its own file with a `header` and feedback:
+
+```bash
+uv run cellveyor ... \
+  --feedback-file feedback/shared.yml \
+  --feedback-file feedback/assignment-one.yml
+```
+
+Pass `--feedback-file` more than once to merge files; later files
+win on conflicts.
 
 ## GitHub transfer
 
