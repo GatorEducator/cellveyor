@@ -57,6 +57,14 @@ def test_create_feedback_list_empty() -> None:
     assert result in ([""], [])
 
 
+def test_create_feedback_list_strips_all_nan() -> None:
+    """Test create_feedback_list removes every nan entry."""
+    assert report.create_feedback_list("nan, nan, congratulations") == [
+        "congratulations"
+    ]
+    assert report.create_feedback_list("a, nan, b, nan") == ["a", "b"]
+
+
 def test_create_feedback_list_single() -> None:
     """Test create_feedback_list with single value."""
     result = report.create_feedback_list("congratulations")
@@ -214,6 +222,32 @@ def test_create_per_key_report_effective_feedback() -> None:
     )
     # should not contain feedback label if no effective keys
     assert "Here is some additional feedback" not in reports["alice"]
+
+
+def test_create_per_key_report_custom_index_feedback() -> None:
+    """Test feedback maps correctly with a non-default index."""
+    df = pandas.DataFrame(
+        {
+            "Student GitHub": ["alice", "bob"],
+            "Grade": [90, 80],
+            "Feedback": ["congratulations", "needsimprovement"],
+        },
+        index=[10, 20],
+    )
+    selected = df[["Grade", "Feedback"]]
+    result_df = df[["Student GitHub", "Grade", "Feedback"]]
+    feedback_dict = {
+        "congratulations": "Great!",
+        "needsimprovement": "Improve.",
+    }
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "Feedback", feedback_dict
+    )
+    # each row keeps its own feedback instead of losing or swapping it
+    assert "Great!" in reports["alice"]
+    assert "Improve." not in reports["alice"]
+    assert "Improve." in reports["bob"]
+    assert "Great!" not in reports["bob"]
 
 
 def test_create_per_key_report_feedback_index_error() -> None:
