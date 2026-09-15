@@ -405,6 +405,40 @@ def test_create_per_key_report_missing_grade_none() -> None:
     assert "- **Grade**:" in reports["alice"]
 
 
+def test_create_per_key_report_excel_errors_blank() -> None:
+    """Document that Excel error strings render as blank values."""
+    # broken formulas arrive as text like "#REF!"; the bullets
+    # must show an empty value instead of the literal error
+    df = pandas.DataFrame(
+        {
+            "Student GitHub": ["alice", "bob"],
+            "Grade": ["#REF!", "  #VALUE!  "],
+        }
+    )
+    selected = df[["Grade"]]
+    result_df = df[["Student GitHub", "Grade"]]
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "NOMATCH", {}
+    )
+    assert "- **Grade**: \n" in reports["alice"]
+    assert "#REF!" not in reports["alice"]
+    assert "- **Grade**: \n" in reports["bob"]
+    assert "#VALUE!" not in reports["bob"]
+
+
+def test_create_per_key_report_hash_text_kept() -> None:
+    """Document that non-error hash text still renders normally."""
+    # only known Excel errors blank; any other string starting
+    # with "#" is content and must reach the report unchanged
+    df = pandas.DataFrame({"Student GitHub": ["alice"], "Grade": ["#1"]})
+    selected = df[["Grade"]]
+    result_df = df[["Student GitHub", "Grade"]]
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "NOMATCH", {}
+    )
+    assert "- **Grade**: #1\n" in reports["alice"]
+
+
 def test_create_per_key_report_present_grade_unchanged() -> None:
     """Confirm that a present grade still renders normally."""
     df = pandas.DataFrame({"Student GitHub": ["alice"], "Grade": [92.5]})
