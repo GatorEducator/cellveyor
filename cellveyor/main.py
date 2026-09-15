@@ -1,6 +1,7 @@
 """Cellveyor is a conveyor for the cells in spreadsheets."""
 
 import os
+import platform
 from pathlib import Path
 from typing import Dict, List
 
@@ -10,8 +11,10 @@ from rich import box
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
+from rich.tree import Tree
 
 from cellveyor import constants, data, filesystem, report, transfer
+from cellveyor.version import CELLVEYOR_VERSION
 
 # load CELLVEYOR_GITHUB_TOKEN (and other env vars) from .env if present;
 # env vars already set in the shell take precedence (override=False)
@@ -36,6 +39,19 @@ def _print_dash_list(title: str, items: List[str], color: str = "red") -> None:
         # use style instead of markup to avoid interpreting brackets in item names
         console.print(f"    - {clean_item}", style=color)
     console.print()
+
+
+def _version_callback(value: bool) -> None:
+    """Print the Cellveyor version and exit when --version is provided."""
+    # report the version along with the active interpreter and
+    # platform so that bug reports can state the full environment
+    if value:
+        version_tree = Tree("Cellveyor", guide_style="dim")
+        version_tree.add(f"Version: {CELLVEYOR_VERSION}")
+        version_tree.add(f"Python: {platform.python_version()}")
+        version_tree.add(f"Platform: {platform.platform()}")
+        console.print(version_tree)
+        raise typer.Exit()
 
 
 def display_reports(reports_dict: Dict[str, str], fancy: bool = True) -> None:
@@ -150,6 +166,13 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
         "--fancy/--no-fancy",
         "-y",
         help="Display reports with rich Panel (default: fancy); use --no-fancy for plain markdown for copying",
+    ),
+    version: bool = typer.Option(
+        False,
+        "--version",
+        help="Show the Cellveyor version and exit.",
+        callback=_version_callback,
+        is_eager=True,
     ),
 ) -> None:
     """Generate per-student grade reports from spreadsheet cells and optionally transfer them to GitHub."""
