@@ -315,6 +315,40 @@ def test_transport_missing_some_github_args() -> None:
     assert "--github-repository-prefix" in output
 
 
+def test_transport_with_malformed_feedback_file(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Test transport warns on a malformed feedback file and continues."""
+    bad_file = tmp_path / "bad.yml"
+    bad_file.write_text("key: [unclosed\n", encoding="utf-8")
+    runner = CliRunner()
+    result = runner.invoke(
+        main.cli,
+        [
+            "--spreadsheet-directory",
+            "spreadsheets",
+            "--spreadsheet-file",
+            "fake_spreadsheet.xlsx",
+            "--sheet-name",
+            "Main",
+            "--key-attribute",
+            "Student GitHub",
+            "--column-regexp",
+            "^(Summary Grade|Final Grade) .*$",
+            "--feedback-regexp",
+            "Summary Grade 1 - Feedback",
+            "--feedback-file",
+            str(bad_file),
+        ],
+    )
+    assert result.exit_code == 0
+    output = _strip_ansi(result.output)
+    assert "Feedback file(s) malformed, skipping:" in output
+    # the full path may wrap mid-name on narrow screens, so compact it
+    assert "bad.yml" in "".join(output.split())
+    assert "gkapfham" in output
+
+
 def test_transport_with_feedback_missing_file() -> None:
     """Test transport with missing feedback file warns."""
     runner = CliRunner()
