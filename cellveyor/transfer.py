@@ -3,6 +3,7 @@
 from typing import Dict
 
 from github import Auth, Github, GithubException
+from rich.console import Console
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -57,8 +58,8 @@ def create_fully_qualified_github_repository(
     fully_qualified_github_repo_name = (
         f"{fully_qualified_github_repo_name}{DASH}{github_username}"
     )
-    # Example of a fully qualified name, using the GitHub Classroom format:
-    # Allegheny-Computer-Science-203-F2023/computer-science-203-fall-2023-executable-exam-1-gkapfham
+    # example of a fully qualified name, using the GitHub Classroom format:
+    # allegheny-Computer-Science-203-F2023/computer-science-203-fall-2023-executable-exam-1-gkapfham
     return fully_qualified_github_repo_name
 
 
@@ -69,8 +70,39 @@ def transfer_reports_to_github(
     github_reports_dict: Dict[str, str],
 ) -> None:
     """Transfer all reports to GitHub."""
+    console = Console()
+    # validate required GitHub arguments
+    if not github_token:
+        console.print()
+        console.print(
+            ":person_shrugging: GitHub token is missing (--github-token)",
+            style="red",
+        )
+        console.print()
+        return
+    if not github_organization:
+        console.print()
+        console.print(
+            ":person_shrugging: GitHub organization is missing (--github-organization)",
+            style="red",
+        )
+        console.print()
+        return
+    if not github_repository_prefix:
+        console.print()
+        console.print(
+            ":person_shrugging: GitHub repository prefix is missing (--github-repository-prefix)",
+            style="red",
+        )
+        console.print()
+        return
+    if not github_reports_dict:
+        console.print()
+        console.print(":warning: No reports to transfer", style="yellow")
+        console.print()
+        return
     # extract the keys for the different repositories on
-    # GitHub that will receive a report during this transfer
+    # gitHub that will receive a report during this transfer
     github_report_keys = github_reports_dict.keys()
     # create a customized progress bar using rich
     progress_bar = Progress(
@@ -127,25 +159,49 @@ def transfer_reports_to_github(
                     f"{INDENT}[red]{DETAILS}[/red]{SPACE}{github_exception}"
                 )
                 continue
+            except Exception as exc:
+                # catch broader errors like auth failures, network errors, bad repo names
+                progress.console.print(
+                    f"{XMARK}{SPACE}[red]{current_github_repository}"
+                )
+                progress.console.print(
+                    f"{INDENT}[red]{DETAILS}[/red]{SPACE}{exc}"
+                )
+                continue
 
 
 def transfer_report_to_github(
     github_token: str, repository: str, report: str
 ) -> None:
     """Transfer a report to a pull request in a GitHub repository."""
+    # validate inputs before attempting GitHub API calls
+    if not github_token or not isinstance(github_token, str):
+        raise ValueError("GitHub token is missing or invalid")
+    if not repository or not isinstance(repository, str):
+        raise ValueError("GitHub repository name is missing or invalid")
+    if FORWARD_SLASH not in repository or DASH not in repository:
+        # basic sanity check; let PyGithub raise more detailed errors
+        pass
     # authorize the conveyor app to access GitHub through
     # the use of the provided personal access token
-    authorization = Auth.Token(github_token)
-    github = Github(auth=authorization)
-    # use the fully qualified name of the GitHub repository to
-    # create a connection to it
-    github_repository = github.get_repo(repository)
-    # access the default pull request according to the
-    # convention established by GitHub Classroom
-    pull_request = github_repository.get_pull(PULL_REQUEST_ID)
-    # create an issue comment in this specific pull request;
-    # note that this is a stand-alone comment for a pull request
-    # and not specifically connected to the review of the pull
-    # request itself; this is the reason why it is actually
-    # using the issue GitHub API to create the comment
-    pull_request.create_issue_comment(report)
+    try:
+        authorization = Auth.Token(github_token)
+        github = Github(auth=authorization)
+        # use the fully qualified name of the GitHub repository to
+        # create a connection to it
+        github_repository = github.get_repo(repository)
+        # access the default pull request according to the
+        # convention established by GitHub Classroom
+        pull_request = github_repository.get_pull(PULL_REQUEST_ID)
+        # create an issue comment in this specific pull request;
+        # note that this is a stand-alone comment for a pull request
+        # and not specifically connected to the review of the pull
+        # request itself; this is the reason why it is actually
+        # using the issue GitHub API to create the comment
+        pull_request.create_issue_comment(report)
+    except (GithubException, ValueError):
+        # re-raise known GitHub/auth errors for caller to handle
+        raise
+    except Exception as exc:
+        # wrap unexpected errors as GithubException-like for uniform handling
+        raise GithubException(500, str(exc), None) from exc

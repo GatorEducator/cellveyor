@@ -1,11 +1,14 @@
 """Create reports based on content in dataframes."""
 
-from typing import Dict, List
+import math
+import re
+from typing import Any, Dict, List
 
 from pandas import DataFrame
 
 COMMA = ","
 DASH = "-"
+EMPTY = ""
 NEWLINE = "\n"
 SPACE = " "
 
@@ -14,6 +17,20 @@ NAN = "nan"
 HEADER = "header"
 FOOTER = "footer"
 
+# formula errors that spreadsheets store as text; these must render
+# as blank values instead of leaking into reports as literal strings
+EXCEL_ERROR_STRINGS = frozenset(
+    {
+        "#DIV/0!",
+        "#N/A",
+        "#NAME?",
+        "#NULL!",
+        "#NUM!",
+        "#REF!",
+        "#VALUE!",
+    }
+)
+
 FEEDBACK_LABEL = "🤝 Here is some additional feedback for you to consider:"
 GREETING_LABEL = "Hello"
 SUMMARY_LABEL = "📔 Here are your summary scores:"
@@ -21,7 +38,7 @@ SUMMARY_LABEL = "📔 Here are your summary scores:"
 
 def add_feedback_if_exists(
     report: str,
-    feedback_dict: Dict[str, str],
+    feedback_dict: Dict[str, Any],
     feedback_key: str,
     make_list: bool = False,
 ) -> str:
@@ -34,6 +51,9 @@ def add_feedback_if_exists(
     if feedback_key in feedback_dict:
         # extract the specific feedback from the dictionary
         feedback = feedback_dict[feedback_key]
+        # handle non-string feedback values (e.g., list/dict from YAML) gracefully
+        if not isinstance(feedback, str):
+            feedback = str(feedback)
         # if the function was not asked to create a list, then
         # add the feedback and then a newline, a space, and then
         # the message; since lists do not need newlines after them,
@@ -43,7 +63,8 @@ def add_feedback_if_exists(
         # if the feedback should appear in a list, then make sure
         # that it is prefaced with a dash and then a space
         else:
-            final_report = final_report + f"{DASH}{SPACE}{feedback}"
+            # ensure each list entry ends with a newline
+            final_report = final_report + f"{DASH}{SPACE}{feedback}{NEWLINE}"
     # return the potentially improved feedback report
     return final_report
 
@@ -55,13 +76,34 @@ def create_feedback_list(feedback_comma_list: str) -> List[str]:
     # own entries inside of a list. Note that this will also extract data
     # values that are "nan" because they were a part of a row that had some
     # values in it mixed with "nan" values; these will be removed next
-    feedback_list = [key.strip() for key in feedback_comma_list.split(COMMA)]
-    # if there is a "nan" value inside of the list, then go ahead and remove it
-    if NAN in feedback_list:
-        feedback_list.remove(NAN)
+    # split on commas and drop every blank or "nan" entry so that no
+    # placeholder value can survive into the final list of feedback keys
+    feedback_list = [
+        key.strip()
+        for key in feedback_comma_list.split(COMMA)
+        if key.strip() not in (EMPTY, NAN)
+    ]
     # return the completed list of feedback that results from converting
     # a string that contains values to a list that contains those values
     return feedback_list
+
+
+def select_feedback_columns(
+    selected_columns: DataFrame, feedback_regexp: str
+) -> DataFrame:
+    """Extract feedback columns matching the pattern, if any are requested."""
+    # an empty pattern means that there are no feedback columns to extract
+    if not feedback_regexp:
+        return selected_columns.iloc[:, 0:0]
+    # validate the feedback pattern before filtering so that an invalid
+    # pattern fails with a clear error instead of a raw pandas exception
+    try:
+        re.compile(feedback_regexp)
+    except re.error as exc:
+        raise ValueError(
+            f"Invalid feedback regular expression '{feedback_regexp}': {exc}"
+        ) from exc
+    return selected_columns.filter(regex=feedback_regexp)
 
 
 def create_per_key_report(
@@ -69,7 +111,7 @@ def create_per_key_report(
     result_dataframe: DataFrame,
     selected_columns: DataFrame,
     feedback_regexp: str,
-    feedback_dict: Dict[str, str],
+    feedback_dict: Dict[str, Any],
 ) -> Dict[str, str]:
     """Create a per-key report for the provided dataframe."""
     # create an empty dictionary for the reports, organized as:
@@ -78,7 +120,9 @@ def create_per_key_report(
     # or upload to a markdown-aware platform like a GitHub issue or pull request
     markdown_reports: Dict[str, str] = {}
     # extract the column(s) that provide extra feedback in a comma-separate list
-    selected_feedback_columns = selected_columns.filter(regex=feedback_regexp)
+    selected_feedback_columns = select_feedback_columns(
+        selected_columns, feedback_regexp
+    )
     selected_columns = selected_columns.drop(selected_feedback_columns, axis=1)  # type: ignore
     # create a unique message for each row in the dataframe
     for index, row in result_dataframe.iterrows():
@@ -106,24 +150,56 @@ def create_per_key_report(
         # add data to the current report for every column and its value
         for column_name in selected_columns.columns:
             column_value = row[column_name]
+            # a missing cell arrives as float NaN for numeric columns
+            # and as None for object columns; a broken formula arrives
+            # as an error string like "#REF!"; render each of these as
+            # a blank value instead of confusing literal text; any other
+            # string starting with "#" is kept, since only known errors blank
+            if (
+                column_value is None
+                or (
+                    isinstance(column_value, float)
+                    and math.isnan(column_value)
+                )
+                or (
+                    isinstance(column_value, str)
+                    and column_value.strip() in EXCEL_ERROR_STRINGS
+                )
+            ):
+                column_value = ""
             current_report = (
                 current_report
                 + f"{DASH}{SPACE}**{column_name}**:{SPACE}{column_value}{NEWLINE}"
             )
         # extract the specific row of feedback from the selected feedback columns
-        feedback_comma_list = str(selected_feedback_columns.iloc[index, 0])  # type: ignore
-        # create a, potentially empty, list of feedback
-        feedback_list = create_feedback_list(feedback_comma_list)
+        # handle case where feedback_regexp matches no columns or index out of range
+        if (
+            selected_feedback_columns.empty
+            or selected_feedback_columns.shape[1] == 0
+        ):
+            feedback_list: List[str] = []
+        else:
+            # read the feedback from the current row by column name so
+            # that non-default indexes cannot misalign or lose feedback;
+            # a missing column yields the default instead of an exception
+            first_feedback_column = selected_feedback_columns.columns[0]
+            feedback_comma_list = str(row.get(first_feedback_column, ""))
+            # create a, potentially empty, list of feedback
+            feedback_list = create_feedback_list(feedback_comma_list)
         # if there is feedback, then add each of the feedback points
         # in a list and then add the content that belongs in the footer
-        if feedback_list:
+        # only show feedback section if at least one key exists in the dict
+        effective_feedback_keys = [
+            k for k in feedback_list if k in feedback_dict
+        ]
+        if effective_feedback_keys:
             current_report = (
                 current_report
                 + f"{NEWLINE}{NEWLINE}**{FEEDBACK_LABEL}**{NEWLINE}{NEWLINE}"
             )
             # make an entry for each of the types of feedback, ensuring that
             # each feedback is an entry inside of a list
-            for feedback_key in feedback_list:
+            for feedback_key in effective_feedback_keys:
                 # only add feedback in a list-based fashion when there is
                 # a feedback value for the key inside of the feedback dictionary
                 current_report = add_feedback_if_exists(
@@ -131,10 +207,14 @@ def create_per_key_report(
                 )
         # add the footer to the feedback report, making sure to add newlines that
         # will provide adequate separation from the potential feedback list
-        current_report = (
-            current_report
-            + f"{NEWLINE}{NEWLINE}{feedback_dict[FOOTER]}{NEWLINE}"
-        )
+        footer_content = feedback_dict.get(FOOTER, "")
+        # handle case where footer value is not a string (e.g., list from YAML)
+        if isinstance(footer_content, list):
+            footer_content = str(footer_content)
+        if footer_content:
+            current_report = (
+                current_report + f"{NEWLINE}{NEWLINE}{footer_content}{NEWLINE}"
+            )
         # now that creation of the current_report is finished, store it
         # inside of the dictionary of the markdown_reports and move to the next one
         markdown_reports[key_attribute_value] = current_report
