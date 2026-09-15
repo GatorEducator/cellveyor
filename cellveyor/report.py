@@ -8,6 +8,7 @@ from pandas import DataFrame
 
 COMMA = ","
 DASH = "-"
+EMPTY = ""
 NEWLINE = "\n"
 SPACE = " "
 
@@ -61,10 +62,13 @@ def create_feedback_list(feedback_comma_list: str) -> List[str]:
     # own entries inside of a list. Note that this will also extract data
     # values that are "nan" because they were a part of a row that had some
     # values in it mixed with "nan" values; these will be removed next
-    feedback_list = [key.strip() for key in feedback_comma_list.split(COMMA)]
-    # if there is a "nan" value inside of the list, then go ahead and remove it
-    if NAN in feedback_list:
-        feedback_list.remove(NAN)
+    # split on commas and drop every blank or "nan" entry so that no
+    # placeholder value can survive into the final list of feedback keys
+    feedback_list = [
+        key.strip()
+        for key in feedback_comma_list.split(COMMA)
+        if key.strip() not in (EMPTY, NAN)
+    ]
     # return the completed list of feedback that results from converting
     # a string that contains values to a list that contains those values
     return feedback_list
@@ -151,12 +155,11 @@ def create_per_key_report(
         ):
             feedback_list: List[str] = []
         else:
-            try:
-                feedback_comma_list = str(
-                    selected_feedback_columns.iloc[index, 0]  # type: ignore
-                )
-            except (IndexError, KeyError):
-                feedback_comma_list = ""
+            # read the feedback from the current row by column name so
+            # that non-default indexes cannot misalign or lose feedback;
+            # a missing column yields the default instead of an exception
+            first_feedback_column = selected_feedback_columns.columns[0]
+            feedback_comma_list = str(row.get(first_feedback_column, ""))
             # create a, potentially empty, list of feedback
             feedback_list = create_feedback_list(feedback_comma_list)
         # if there is feedback, then add each of the feedback points
