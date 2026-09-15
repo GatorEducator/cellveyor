@@ -224,6 +224,122 @@ def test_create_per_key_report_effective_feedback() -> None:
     assert "Here is some additional feedback" not in reports["alice"]
 
 
+def test_create_per_key_report_nan_feedback_cell() -> None:
+    """Document that an empty feedback cell means no feedback section."""
+    # empty spreadsheet cells arrive as float NaN; the report for
+    # such a row is still built, but it carries no feedback bullets
+    df = pandas.DataFrame(
+        {
+            "Student GitHub": ["alice"],
+            "Grade": [90],
+            "Feedback": [float("nan")],
+        }
+    )
+    selected = df[["Grade", "Feedback"]]
+    result_df = df[["Student GitHub", "Grade", "Feedback"]]
+    feedback_dict = {"congratulations": "Great!"}
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "Feedback", feedback_dict
+    )
+    assert "alice" in reports
+    assert "Here is some additional feedback" not in reports["alice"]
+
+
+def test_create_per_key_report_dropped_row_keeps_feedback() -> None:
+    """Document that a removed blank row cannot shift feedback."""
+    # index 1 was an all-empty row dropped before reporting; the
+    # surviving rows must still map to their own feedback cells
+    df = pandas.DataFrame(
+        {
+            "Student GitHub": ["alice", "bob"],
+            "Grade": [90, 80],
+            "Feedback": ["congratulations", "needsimprovement"],
+        },
+        index=[0, 2],
+    )
+    selected = df[["Grade", "Feedback"]]
+    result_df = df[["Student GitHub", "Grade", "Feedback"]]
+    feedback_dict = {
+        "congratulations": "Great!",
+        "needsimprovement": "Improve.",
+    }
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "Feedback", feedback_dict
+    )
+    assert "Great!" in reports["alice"]
+    assert "Improve." not in reports["alice"]
+    assert "Improve." in reports["bob"]
+    assert "Great!" not in reports["bob"]
+
+
+def test_create_per_key_report_padded_feedback_key() -> None:
+    """Document that surrounding whitespace does not block a key."""
+    # spreadsheet editing often leaves stray spaces; stripping
+    # keeps such cells resolving to their feedback entries
+    df = pandas.DataFrame(
+        {
+            "Student GitHub": ["alice"],
+            "Grade": [90],
+            "Feedback": ["  congratulations  "],
+        }
+    )
+    selected = df[["Grade", "Feedback"]]
+    result_df = df[["Student GitHub", "Grade", "Feedback"]]
+    feedback_dict = {"congratulations": "Great!"}
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "Feedback", feedback_dict
+    )
+    assert "Great!" in reports["alice"]
+
+
+def test_create_per_key_report_unknown_feedback_key_ignored() -> None:
+    """Document that unknown keys are skipped, known keys render."""
+    # only keys present in the feedback dictionary become bullets;
+    # anything else in the cell is silently left out of the report
+    df = pandas.DataFrame(
+        {
+            "Student GitHub": ["alice"],
+            "Grade": [90],
+            "Feedback": ["congratulations, madeupkey"],
+        }
+    )
+    selected = df[["Grade", "Feedback"]]
+    result_df = df[["Student GitHub", "Grade", "Feedback"]]
+    feedback_dict = {"congratulations": "Great!"}
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "Feedback", feedback_dict
+    )
+    assert "Great!" in reports["alice"]
+    assert "madeupkey" not in reports["alice"]
+
+
+def test_create_per_key_report_feedback_section_gating() -> None:
+    """Document that unmatched keys hide the whole feedback section."""
+    # the feedback label and bullets appear only when at least one
+    # cell key exists in the feedback dictionary; the header and
+    # the footer are independent of this gate and still render
+    df = pandas.DataFrame(
+        {
+            "Student GitHub": ["alice"],
+            "Grade": [90],
+            "Feedback": ["missing_key"],
+        }
+    )
+    selected = df[["Grade", "Feedback"]]
+    result_df = df[["Student GitHub", "Grade", "Feedback"]]
+    feedback_dict = {
+        "header": "Welcome\n",
+        "footer": "Goodbye\n",
+        "congratulations": "Great!",
+    }
+    reports = report.create_per_key_report(
+        "Student GitHub", result_df, selected, "Feedback", feedback_dict
+    )
+    assert "Here is some additional feedback" not in reports["alice"]
+    assert "Welcome" in reports["alice"]
+    assert "Goodbye" in reports["alice"]
+
+
 def test_create_per_key_report_custom_index_feedback() -> None:
     """Test feedback maps correctly with a non-default index."""
     df = pandas.DataFrame(
