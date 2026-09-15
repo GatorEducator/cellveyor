@@ -12,6 +12,7 @@ from rich.console import Console
 from typer.testing import CliRunner
 
 from cellveyor import main
+from cellveyor.version import CELLVEYOR_VERSION
 
 
 def _strip_ansi(text: str) -> str:
@@ -258,6 +259,23 @@ def test_transport_empty_feedback_regexp() -> None:
     )
     assert result.exit_code == 0
     assert "gkapfham" in _strip_ansi(result.output)
+
+
+def test_version_callback() -> None:
+    """Test version callback prints the version and exits."""
+    with pytest.raises(typer.Exit):
+        main._version_callback(True)
+    main._version_callback(False)
+
+
+def test_transport_version() -> None:
+    """Test --version works without any other options."""
+    runner = CliRunner()
+    result = runner.invoke(main.cli, ["--version"])
+    assert result.exit_code == 0
+    output = _strip_ansi(result.output)
+    assert CELLVEYOR_VERSION in output
+    assert "Python:" in output
 
 
 def test_transport_missing_github_args() -> None:
