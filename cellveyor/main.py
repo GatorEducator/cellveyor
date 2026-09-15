@@ -217,6 +217,24 @@ def transport(  # noqa: PLR0912, PLR0913, PLR0915, PLR0917
             for fb_path in missing_feedback:
                 console.print(f"    - {fb_path}", style="yellow")
             console.print()
+    # warn about any feedback files that exist but cannot be used;
+    # each file is parsed again when merging below, which is cheap
+    if feedback_file is not None:
+        malformed_feedback = [
+            fb
+            for fb in feedback_file
+            if filesystem.confirm_valid_file(fb)
+            and filesystem.load_feedback_file(fb)[1]
+        ]
+        if malformed_feedback:
+            console.print(
+                ":warning: Feedback file(s) malformed, skipping:",
+                style="yellow",
+            )
+            console.print()
+            for fb_path in malformed_feedback:
+                console.print(f"    - {fb_path}", style="yellow")
+            console.print()
     # access all of the feedback files and combine them into a single
     # dictionary organized in the following fashion:
     # --> key: label like "header" or "footer" or a label
