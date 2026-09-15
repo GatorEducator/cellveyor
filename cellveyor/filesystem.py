@@ -93,25 +93,23 @@ def confirm_valid_file_in_directory(
     return False
 
 
-def read_feedback_files(
+def read_feedback_files_with_warnings(
     feedback_files_list: List[Path] | None,
-) -> Dict[str, str]:
-    """Read all of the feedback files and return them in a combined dictionary."""
+) -> Tuple[Dict[str, str], List[Path]]:
+    """Read feedback files, returning combined entries and skipped paths."""
     # handle the case where no feedback files were provided
     if feedback_files_list is None:
-        return {}
+        return {}, []
     feedback_dict_list: List[Dict[str, str]] = []
-    # iterate through all of the provided feedback files
+    skipped_paths: List[Path] = []
+    # parse each file exactly once, sorting usable entries
+    # from skipped paths as they are encountered
     for feedback_file_path in feedback_files_list:
-        # confirm that the file is valid; if it is valid
-        # then its contents will be read and converted to a dictionary
         if confirm_valid_file(feedback_file_path):
-            # parse and validate the file; skipped files keep an
-            # empty content so that they never reach the merge below
-            feedback_content, _ = load_feedback_file(feedback_file_path)
-            if feedback_content:
-                # add the dictionary to the overall list of feedback
-                # dictionaries that the merge below combines into one
+            feedback_content, warning = load_feedback_file(feedback_file_path)
+            if warning:
+                skipped_paths.append(feedback_file_path)
+            elif feedback_content:
                 feedback_dict_list.append(feedback_content)
     # create an empty dictionary and then use it to store the
     # unified contents of all of the other dictionaries coming from
@@ -119,5 +117,15 @@ def read_feedback_files(
     feedback_dict_combined: Dict[str, str] = {}
     for current_feedback_dict in feedback_dict_list:
         feedback_dict_combined.update(current_feedback_dict)
-    # return the final dictionary that combines all dictionaries
-    return feedback_dict_combined
+    # return the combined entries along with every path that was skipped
+    return feedback_dict_combined, skipped_paths
+
+
+def read_feedback_files(
+    feedback_files_list: List[Path] | None,
+) -> Dict[str, str]:
+    """Read all of the feedback files and return them in a combined dictionary."""
+    # reuse the single-pass reader, discarding the skipped paths here;
+    # callers that warn about skipped files use the reader above directly
+    combined, _ = read_feedback_files_with_warnings(feedback_files_list)
+    return combined
