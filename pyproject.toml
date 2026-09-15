@@ -20,7 +20,6 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Education",
@@ -81,6 +80,17 @@ build-backend = "hatchling.build"
 packages = ["cellveyor"]
 
 [tool.hatch.build.targets.sdist]
+# the sdist ships exactly what users and testers need: the package,
+# its tests and example files, and the project metadata; everything
+# else (developer notes, tooling, caches, secrets template) stays out
+include = [
+    "cellveyor",
+    "tests",
+    "spreadsheets",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+]
 exclude = [
     ".coverage",
     ".coverage.*",
@@ -92,6 +102,13 @@ exclude = [
     ".rumdl_cache",
     ".venv",
     "dist",
+    ".env.example",
+    ".devenv",
+    ".github",
+    "AGENTS.md",
+    "scripts",
+    "shell.nix",
+    "uv.lock",
 ]
 
 [tool.pytest.ini_options]
