@@ -151,6 +151,21 @@ def test_load_feedback_file_non_dict(tmp_path: pathlib.Path) -> None:
     assert warning != ""
 
 
+def test_read_feedback_files_with_warnings_mixed(
+    tmp_path: pathlib.Path,
+) -> None:
+    """Confirm usable entries merge while bad paths are reported."""
+    good_file = tmp_path / "good.yml"
+    good_file.write_text("congratulations: Great!\n", encoding="utf-8")
+    bad_file = tmp_path / "bad.yml"
+    bad_file.write_text("key: [unclosed\n", encoding="utf-8")
+    combined, skipped = filesystem.read_feedback_files_with_warnings(
+        [good_file, bad_file]
+    )
+    assert combined == {"congratulations": "Great!"}
+    assert skipped == [bad_file]
+
+
 def test_confirm_valid_file_in_directory_valid(
     tmp_path: pathlib.Path,
 ) -> None:
