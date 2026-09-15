@@ -1,9 +1,56 @@
 """Check and access contents of the filesystem."""
 
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 
 import yaml
+from pydantic import BaseModel, ConfigDict
+
+
+class FeedbackFile(BaseModel):
+    """Validated shape of a feedback file: header, footer, open keys."""
+
+    model_config = ConfigDict(extra="allow")
+
+    header: Optional[str] = None
+    footer: Optional[str] = None
+
+
+def load_feedback_file(
+    feedback_file_path: Path,
+) -> Tuple[Dict[str, str], str]:
+    """Load one feedback file, returning its entries and a warning in cases when there was a malformed file."""
+    # the warning is empty when the file loaded correctly;
+    # otherwise it explains why the file was skipped entirely
+    try:
+        loaded_content = yaml.safe_load(
+            feedback_file_path.read_text(encoding="utf-8")
+        )
+    except (OSError, yaml.YAMLError) as exc:
+        return {}, f"unreadable content: {exc}"
+    # empty files cannot provide any feedback entries
+    if loaded_content is None:
+        return {}, "empty file"
+    # valid YAML that is not a mapping cannot provide feedback entries
+    if not isinstance(loaded_content, dict):
+        return {}, "expected a mapping of feedback entries"
+    # coerce every key and value to text, mirroring how reports
+    # already stringify non-string feedback; this keeps files like
+    # the sample feedback.yml (with a list footer) loading cleanly
+    coerced = {
+        key if isinstance(key, str) else str(key): value
+        if isinstance(value, str)
+        else str(value)
+        for key, value in loaded_content.items()
+    }
+    # validate the open-ended shape of the coerced mapping
+    validated = FeedbackFile.model_validate(coerced)
+    combined = dict(validated.model_extra or {})
+    if validated.header is not None:
+        combined["header"] = validated.header
+    if validated.footer is not None:
+        combined["footer"] = validated.footer
+    return combined, ""
 
 
 def confirm_valid_file(file: Path) -> bool:
@@ -59,26 +106,13 @@ def read_feedback_files(
         # confirm that the file is valid; if it is valid
         # then its contents will be read and converted to a dictionary
         if confirm_valid_file(feedback_file_path):
-            try:
-                # read the contents of the file, which are a string
-                # that contains within it the contents of the YAML file
-                feedback_file_contents = feedback_file_path.read_text()
-                # convert the string that encodes a YAML file to a dictionary
-                feedback_file_contents_dict = yaml.safe_load(
-                    feedback_file_contents
-                )
-                # yaml.safe_load can return None for empty files; skip those
-                if feedback_file_contents_dict is None:
-                    continue
-                # ensure the loaded content is a dict before adding
-                if not isinstance(feedback_file_contents_dict, dict):
-                    continue
-                # add the dictionary to the overall list of feedback dictionaries
-                feedback_dict_list.append(feedback_file_contents_dict)
-            except (OSError, yaml.YAMLError):
-                # silently skip unreadable or malformed feedback files;
-                # caller can warn if desired
-                continue
+            # parse and validate the file; skipped files keep an
+            # empty content so that they never reach the merge below
+            feedback_content, _ = load_feedback_file(feedback_file_path)
+            if feedback_content:
+                # add the dictionary to the overall list of feedback
+                # dictionaries that the merge below combines into one
+                feedback_dict_list.append(feedback_content)
     # create an empty dictionary and then use it to store the
     # unified contents of all of the other dictionaries coming from
     # the previously input YAML files that contains the feedback pairs
