@@ -113,6 +113,44 @@ def test_read_feedback_files_merge_order(tmp_path: pathlib.Path) -> None:
     assert combined == {"header": "First", "footer": "Second footer"}
 
 
+def test_load_feedback_file_valid(tmp_path: pathlib.Path) -> None:
+    """Confirm that a valid feedback file loads without a warning."""
+    good_file = tmp_path / "good.yml"
+    good_file.write_text(
+        "header: Hello\ncongratulations: Great!\n", encoding="utf-8"
+    )
+    content, warning = filesystem.load_feedback_file(good_file)
+    assert content == {"header": "Hello", "congratulations": "Great!"}
+    assert warning == ""
+
+
+def test_load_feedback_file_malformed(tmp_path: pathlib.Path) -> None:
+    """Confirm that a malformed feedback file reports a warning."""
+    bad_file = tmp_path / "bad.yml"
+    bad_file.write_text("key: [unclosed\n", encoding="utf-8")
+    content, warning = filesystem.load_feedback_file(bad_file)
+    assert content == {}
+    assert warning != ""
+
+
+def test_load_feedback_file_empty(tmp_path: pathlib.Path) -> None:
+    """Confirm that an empty feedback file reports a warning."""
+    empty_file = tmp_path / "empty.yml"
+    empty_file.write_text("", encoding="utf-8")
+    content, warning = filesystem.load_feedback_file(empty_file)
+    assert content == {}
+    assert warning != ""
+
+
+def test_load_feedback_file_non_dict(tmp_path: pathlib.Path) -> None:
+    """Confirm that a non-mapping feedback file reports a warning."""
+    list_file = tmp_path / "list.yml"
+    list_file.write_text("- a\n- b\n", encoding="utf-8")
+    content, warning = filesystem.load_feedback_file(list_file)
+    assert content == {}
+    assert warning != ""
+
+
 def test_confirm_valid_file_in_directory_valid(
     tmp_path: pathlib.Path,
 ) -> None:
